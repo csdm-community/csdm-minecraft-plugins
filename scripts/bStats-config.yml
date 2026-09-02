@@ -1,0 +1,6 @@
+# Telemetria desactivada por defecto para la infraestructura CSDM.
+enabled: false
+serverUuid: ""
+logFailedRequests: false
+logSentData: false
+logResponseStatusText: false
