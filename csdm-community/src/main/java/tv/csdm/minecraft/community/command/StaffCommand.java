@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tv.csdm.minecraft.community.CSDMCommunityPlugin;
+import tv.csdm.minecraft.community.staff.RankKind;
 import tv.csdm.minecraft.community.staff.StaffRankDefinition;
 import tv.csdm.minecraft.community.staff.StaffRankService;
 
@@ -32,14 +33,15 @@ public final class StaffCommand implements CommandExecutor, TabCompleter {
             @NotNull String label,
             @NotNull String[] args) {
         if (args.length == 0 || args[0].equalsIgnoreCase("lista")) {
-            sender.sendMessage(Component.text("Rangos administrados por CSDM:", NamedTextColor.AQUA));
+            sender.sendMessage(Component.text("Rangos funcionales y de prestigio CSDM:", NamedTextColor.AQUA));
             service.ranks().forEach(rank -> sender.sendMessage(Component.text(
-                    "- " + rank.id() + " → " + rank.displayName() + " [" + rank.group() + "]",
+                    "- " + rank.id() + " → " + rank.displayName() + " ["
+                            + rank.kind().name().toLowerCase(Locale.ROOT) + "]",
                     NamedTextColor.GRAY)));
             return true;
         }
         if (args[0].equalsIgnoreCase("recargar")) {
-            if (!sender.hasPermission("csdm.staff.manage")) {
+            if (!sender.hasPermission("csdm.ranks.manage")) {
                 return noPermission(sender);
             }
             plugin.reloadCommunityConfiguration();
@@ -47,7 +49,9 @@ public final class StaffCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (args.length < 2) {
-            sender.sendMessage(Component.text("/staff <ver|asignar|retirar> <jugador> [rango]", NamedTextColor.YELLOW));
+            sender.sendMessage(Component.text(
+                    "/rangos <ver|asignar|retirar> <jugador> [rango|funcional|prestigio]",
+                    NamedTextColor.YELLOW));
             return true;
         }
         Player target = Bukkit.getPlayerExact(args[1]);
@@ -56,15 +60,25 @@ public final class StaffCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (args[0].equalsIgnoreCase("ver")) {
-            String rank = service.current(target).map(StaffRankDefinition::displayName).orElse("Sin rango CSDM");
-            sender.sendMessage(Component.text(target.getName() + ": " + rank, NamedTextColor.AQUA));
+            String functional = service.current(target, RankKind.FUNCTIONAL)
+                    .map(StaffRankDefinition::displayName).orElse("Usuario");
+            String prestige = service.current(target, RankKind.PRESTIGE)
+                    .map(StaffRankDefinition::displayName).orElse("Sin prestigio");
+            sender.sendMessage(Component.text(
+                    target.getName() + ": " + functional + " · " + prestige,
+                    NamedTextColor.AQUA));
             return true;
         }
-        if (!sender.hasPermission("csdm.staff.manage")) {
+        if (!sender.hasPermission("csdm.ranks.manage")) {
             return noPermission(sender);
         }
-        if (args[0].equalsIgnoreCase("retirar")) {
-            service.clear(target).thenAccept(changed -> onMain(() -> {
+        if (args[0].equalsIgnoreCase("retirar") && args.length == 3) {
+            RankKind kind = parseKind(args[2]);
+            if (kind == null) {
+                sender.sendMessage(Component.text("Indica funcional o prestigio.", NamedTextColor.RED));
+                return true;
+            }
+            service.clear(target, kind).thenAccept(changed -> onMain(() -> {
                 service.syncDisplay(target);
                 sender.sendMessage(Component.text(
                         changed ? "Rango retirado." : "El jugador no tenia un rango administrado.",
@@ -83,7 +97,7 @@ public final class StaffCommand implements CommandExecutor, TabCompleter {
             }
             return true;
         }
-        sender.sendMessage(Component.text("/staff asignar <jugador> <rango>", NamedTextColor.YELLOW));
+        sender.sendMessage(Component.text("/rangos asignar <jugador> <rango>", NamedTextColor.YELLOW));
         return true;
     }
 
@@ -111,6 +125,9 @@ public final class StaffCommand implements CommandExecutor, TabCompleter {
         if (args.length == 3 && args[0].equalsIgnoreCase("asignar")) {
             return filter(service.ranks().stream().map(StaffRankDefinition::id).toList(), args[2]);
         }
+        if (args.length == 3 && args[0].equalsIgnoreCase("retirar")) {
+            return filter(List.of("funcional", "prestigio"), args[2]);
+        }
         return List.of();
     }
 
@@ -118,5 +135,12 @@ public final class StaffCommand implements CommandExecutor, TabCompleter {
         String prefix = input.toLowerCase(Locale.ROOT);
         return options.stream().filter(value -> value.toLowerCase(Locale.ROOT).startsWith(prefix)).toList();
     }
-}
 
+    private RankKind parseKind(String input) {
+        return switch (input.toLowerCase(Locale.ROOT)) {
+            case "funcional", "staff" -> RankKind.FUNCTIONAL;
+            case "prestigio", "medalla" -> RankKind.PRESTIGE;
+            default -> null;
+        };
+    }
+}

@@ -16,11 +16,11 @@ public final class StaffDisplayListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+        service.ensureDefaultFunctionalRank(event.getPlayer()).whenComplete((changed, error) ->
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (event.getPlayer().isOnline()) {
                 service.syncDisplay(event.getPlayer());
             }
-        }, 5L);
+        }, 5L));
     }
 }
-

@@ -1,45 +1,72 @@
-staff-ranks:
-  owner:
-    group: "csdm-owner"
-    display-name: "Dirección"
-    prefix: "<gradient:#00E5FF:#9B5CFF><bold>DIRECCIÓN</bold></gradient> <dark_gray>•</dark_gray> "
+functional-ranks:
+  usuario:
+    group: "csdm-usuario"
+    display-name: "Usuario"
+    prefix: "<gray><bold>USUARIO</bold></gray> <dark_gray>•</dark_gray> "
     priority: 100
     permissions:
-      - "csdm.*"
-  admin:
-    group: "csdm-admin"
-    display-name: "Administración"
-    prefix: "<aqua><bold>ADMIN</bold></aqua> <dark_gray>•</dark_gray> "
-    priority: 90
+      - "csdm.ranks.view"
+      - "csdm.medals.view"
+  personalidad:
+    group: "csdm-personalidad"
+    display-name: "Personalidad"
+    prefix: "<gradient:#FFD166:#FF62C7><bold>PERSONALIDAD</bold></gradient> <dark_gray>•</dark_gray> "
+    priority: 200
+    inherits: ["csdm-usuario"]
     permissions:
-      - "csdm.admin.*"
-      - "csdm.staff.manage"
-      - "csdm.medals.manage"
-  moderator:
-    group: "csdm-moderator"
+      - "csdm.command.fly"
+      - "csdm.admin.spawn"
+      - "csdm.maintenance.bypass"
+  mod:
+    group: "csdm-mod"
     display-name: "Moderación"
     prefix: "<blue><bold>MOD</bold></blue> <dark_gray>•</dark_gray> "
-    priority: 70
+    priority: 300
+    inherits: ["csdm-usuario"]
     permissions:
       - "csdm.admin.bypass"
-      - "csdm.staff.view"
-      - "csdm.medals.view"
-  editorial:
-    group: "csdm-editorial"
-    display-name: "Editorial"
-    prefix: "<light_purple><bold>EDITORIAL</bold></light_purple> <dark_gray>•</dark_gray> "
-    priority: 60
+      - "csdm.maintenance.bypass"
+      - "csdm.staffmode.use"
+      - "csdm.staffmode.see"
+      - "csdm.sanctions.warn"
+      - "csdm.sanctions.kick"
+      - "csdm.sanctions.tempban"
+  coordinacion:
+    group: "csdm-coordinacion"
+    display-name: "Coordinación"
+    prefix: "<aqua><bold>COORDINACIÓN</bold></aqua> <dark_gray>•</dark_gray> "
+    priority: 400
+    inherits: ["csdm-mod"]
     permissions:
-      - "csdm.staff.view"
-      - "csdm.medals.view"
-  builder:
-    group: "csdm-builder"
-    display-name: "Construcción"
-    prefix: "<yellow><bold>BUILDER</bold></yellow> <dark_gray>•</dark_gray> "
-    priority: 50
+      - "csdm.sanctions.ban"
+      - "csdm.sanctions.pardon"
+      - "csdm.ranks.manage"
+      - "csdm.medals.manage"
+  direccion:
+    group: "csdm-direccion"
+    display-name: "Dirección"
+    prefix: "<gradient:#00E5FF:#9B5CFF><bold>DIRECCIÓN</bold></gradient> <dark_gray>•</dark_gray> "
+    priority: 500
+    inherits: ["csdm-coordinacion"]
     permissions:
-      - "csdm.admin.bypass"
-      - "csdm.verify.bypass-protection"
+      - "csdm.*"
+
+prestige-ranks:
+  elite:
+    group: "csdm-prestigio-elite"
+    display-name: "Élite"
+    prefix: "<aqua><bold>ÉLITE</bold></aqua> <dark_gray>•</dark_gray> "
+    priority: 100
+  leyenda:
+    group: "csdm-prestigio-leyenda"
+    display-name: "Leyenda"
+    prefix: "<light_purple><bold>LEYENDA</bold></light_purple> <dark_gray>•</dark_gray> "
+    priority: 200
+  inmortal:
+    group: "csdm-prestigio-inmortal"
+    display-name: "Inmortal"
+    prefix: "<gold><bold>INMORTAL</bold></gold> <dark_gray>•</dark_gray> "
+    priority: 300
 
 storage:
   # MVP local. La siguiente fase sustituira este repositorio por el endpoint interno de CSDM.
@@ -52,9 +79,10 @@ presence-messages:
   quit: "<dark_gray>✦ <gray><player> abandono el Archivo.</gray></dark_gray><medal>"
   show-featured-medal: true
   join-rank-overrides:
-    owner: "<gradient:#00E5FF:#B86BFF><bold>✦ DIRECCIÓN · <player> ha entrado al Archivo.</bold></gradient>"
-    admin: "<aqua><bold>⚙ ADMIN · <player></bold> ha entrado a la terminal.</aqua>"
-    moderator: "<blue><bold>◆ MOD · <player></bold> esta en linea.</blue>"
+    direccion: "<gradient:#00E5FF:#B86BFF><bold>✦ DIRECCIÓN · <player> ha entrado al Archivo.</bold></gradient>"
+    coordinacion: "<aqua><bold>⚙ COORDINACIÓN · <player></bold> ha entrado a la terminal.</aqua>"
+    mod: "<blue><bold>◆ MOD · <player></bold> esta en linea.</blue>"
+    personalidad: "<gradient:#FFD166:#FF62C7><bold>✦ PERSONALIDAD · <player> visita el Archivo.</bold></gradient>"
   quit-rank-overrides:
-    owner: "<dark_gray>✦ <player> cerro la sesión de Dirección.</dark_gray>"
-    admin: "<dark_gray>⚙ ADMIN · <player> abandono la terminal.</dark_gray>"
+    direccion: "<dark_gray>✦ <player> cerro la sesión de Dirección.</dark_gray>"
+    coordinacion: "<dark_gray>⚙ COORDINACIÓN · <player> abandono la terminal.</dark_gray>"

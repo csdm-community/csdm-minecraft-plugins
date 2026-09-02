@@ -5,10 +5,24 @@ description: Administracion operativa y proteccion del lobby CSDM
 author: CSDM
 website: https://csdm.tv
 api-version: '26.2'
+softdepend: [LuckPerms]
 commands:
   csdmadmin:
     description: Administra las politicas del servidor CSDM
     usage: /csdmadmin <estado|noche|mantenimiento|spawn|setspawn|aplicar|recargar>
+  staff:
+    description: Activa o desactiva el Staff Mode de CSDM
+    aliases: [sm]
+    usage: /staff [activar|desactivar|vanish|tp|congelar|inspeccionar]
+    permission: csdm.staffmode.use
+  fly:
+    description: Activa o desactiva el vuelo autorizado
+    usage: /fly [jugador]
+    permission: csdm.command.fly
+  sancionar:
+    description: Aplica sanciones aisladas del servidor Minecraft
+    aliases: [sanction]
+    usage: /sancionar <jugador> <advertir|expulsar|suspender|bloquear|perdonar> ...
 permissions:
   csdm.admin.manage:
     description: Permite administrar CSDMAdmin
@@ -16,4 +30,34 @@ permissions:
   csdm.admin.bypass:
     description: Omite protecciones y restricciones del lobby
     default: op
-
+  csdm.admin.spawn:
+    description: Permite usar /csdmadmin spawn sin administrar el servidor
+    default: op
+  csdm.maintenance.bypass:
+    description: Permite entrar durante mantenimiento
+    default: op
+  csdm.staffmode.use:
+    description: Permite utilizar /staff y /sm
+    default: op
+  csdm.staffmode.see:
+    description: Permite ver integrantes ocultos en Staff Mode
+    default: op
+  csdm.command.fly:
+    description: Permite utilizar /fly
+    default: op
+  csdm.command.fly.others:
+    description: Permite cambiar el vuelo de otros jugadores
+    default: op
+  csdm.sanctions.warn:
+    default: op
+  csdm.sanctions.kick:
+    default: op
+  csdm.sanctions.tempban:
+    default: op
+  csdm.sanctions.ban:
+    default: op
+  csdm.sanctions.pardon:
+    default: op
+  csdm.sanctions.unlimited:
+    description: Elimina el límite de siete días para suspensiones
+    default: op

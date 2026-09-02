@@ -11,7 +11,7 @@ world:
 
 players:
   force-adventure: true
-  allow-flight: true
+  allow-flight: false
   teleport-to-spawn-on-join: true
   rescue-below-y: -20
   staff-bypass-keeps-gamemode: true
@@ -42,3 +42,10 @@ spawn:
   z: 0.5
   yaw: 0.0
   pitch: 0.0
+
+moderation:
+  # Edge Function que registra la sanción y la entrega al bot de Discord.
+  backend-url: ""
+  # El secreto vive únicamente en /etc/csdm-verify.env; nunca en este archivo.
+  internal-secret-env: "CSDM_MINECRAFT_ADMIN_SECRET"
+  request-timeout-seconds: 5
