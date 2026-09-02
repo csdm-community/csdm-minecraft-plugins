@@ -1,7 +1,8 @@
 enabled: false
 
 backend:
-  url: "https://PROJECT_REF.supabase.co/functions/v1/verify-minecraft-link"
+  # Valor inactivo pero sintacticamente valido. Sustituir al activar el plugin.
+  url: "https://replace-me.supabase.co/functions/v1/verify-minecraft-link"
   secret-env: "CSDM_INTERNAL_SECRET"
   # Solo para desarrollo local. En produccion debe permanecer vacio.
   secret: ""
