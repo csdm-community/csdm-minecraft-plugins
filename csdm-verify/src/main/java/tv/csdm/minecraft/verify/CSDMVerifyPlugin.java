@@ -11,6 +11,7 @@ import tv.csdm.minecraft.verify.listener.JoinListener;
 import tv.csdm.minecraft.verify.listener.PlayerProtectionListener;
 import tv.csdm.minecraft.verify.service.VerificationCoordinator;
 import tv.csdm.minecraft.verify.version.ViaVersionClientVersionResolver;
+import tv.csdm.minecraft.verify.world.WorldRoutingService;
 
 public final class CSDMVerifyPlugin extends JavaPlugin {
     private VerifySettings settings;
@@ -39,20 +40,23 @@ public final class CSDMVerifyPlugin extends JavaPlugin {
         var versionResolver = new ViaVersionClientVersionResolver(this);
         var backendClient = new HttpBackendClient(settings);
         var coordinator = new VerificationCoordinator(settings, backendClient);
-        var verifyCommand = new VerifyCommand(this, settings, messages, coordinator, versionResolver);
+        var routing = new WorldRoutingService(this, settings);
+        var verifyCommand = new VerifyCommand(
+                this, settings, messages, coordinator, versionResolver, routing);
 
         PluginCommand command = Objects.requireNonNull(getCommand("verificar"), "Falta /verificar en plugin.yml");
         command.setExecutor(verifyCommand);
         command.setTabCompleter(verifyCommand);
 
-        getServer().getPluginManager().registerEvents(new JoinListener(this, messages), this);
         getServer().getPluginManager().registerEvents(
-                new PlayerProtectionListener(settings.blockChat()), this);
+                new JoinListener(this, settings, messages, backendClient, routing), this);
+        getServer().getPluginManager().registerEvents(
+                new PlayerProtectionListener(settings.blockChat(), routing), this);
 
         if (!settings.enabled()) {
             getLogger().warning("CSDMVerify esta instalado pero disabled: enabled=false.");
         } else {
-            getLogger().info("CSDMVerify activo. El secreto se cargo sin exponerlo en logs.");
+            getLogger().info("CSDMVerify activo con rutas verify_void -> lobby.");
         }
     }
 
@@ -64,4 +68,3 @@ public final class CSDMVerifyPlugin extends JavaPlugin {
         return messages;
     }
 }
-
