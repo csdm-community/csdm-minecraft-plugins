@@ -8,9 +8,11 @@ public record StaffRankDefinition(
         String displayName,
         String prefix,
         int priority,
+        RankKind kind,
+        List<String> inherits,
         List<String> permissions) {
     public StaffRankDefinition {
+        inherits = List.copyOf(inherits);
         permissions = List.copyOf(permissions);
     }
 }
-

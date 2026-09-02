@@ -11,9 +11,10 @@ commands:
     description: Administra y consulta medallas CSDM
     usage: /medalla <lista|otorgar|retirar|destacar|recargar>
     aliases: [medallas]
-  staff:
-    description: Administra los rangos de staff delegados a LuckPerms
-    usage: /staff <lista|ver|asignar|retirar|recargar>
+  rangos:
+    description: Administra los rangos funcionales y de prestigio delegados a LuckPerms
+    usage: /rangos <lista|ver|asignar|retirar|recargar>
+    aliases: [rango]
 permissions:
   csdm.medals.view:
     description: Permite consultar medallas
@@ -21,10 +22,9 @@ permissions:
   csdm.medals.manage:
     description: Permite otorgar y retirar medallas
     default: op
-  csdm.staff.view:
+  csdm.ranks.view:
     description: Permite consultar rangos de staff
     default: true
-  csdm.staff.manage:
+  csdm.ranks.manage:
     description: Permite asignar rangos de staff
     default: op
-

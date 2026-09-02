@@ -47,9 +47,9 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
         medal.setTabCompleter(medalCommand);
 
         StaffCommand staffCommand = new StaffCommand(this, staffRankService);
-        PluginCommand staff = Objects.requireNonNull(getCommand("staff"));
-        staff.setExecutor(staffCommand);
-        staff.setTabCompleter(staffCommand);
+        PluginCommand ranks = Objects.requireNonNull(getCommand("rangos"));
+        ranks.setExecutor(staffCommand);
+        ranks.setTabCompleter(staffCommand);
 
         getServer().getPluginManager().registerEvents(new StaffDisplayListener(this, staffRankService), this);
         getServer().getPluginManager().registerEvents(

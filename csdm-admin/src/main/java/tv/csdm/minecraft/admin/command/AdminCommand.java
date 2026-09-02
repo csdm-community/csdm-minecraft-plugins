@@ -26,7 +26,9 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
             @NotNull Command command,
             @NotNull String label,
             @NotNull String[] args) {
-        if (!sender.hasPermission("csdm.admin.manage")) {
+        boolean spawnOnly = args.length > 0 && args[0].equalsIgnoreCase("spawn")
+                && sender.hasPermission("csdm.admin.spawn");
+        if (!sender.hasPermission("csdm.admin.manage") && !spawnOnly) {
             sender.sendMessage(Component.text("No tienes permiso.", NamedTextColor.RED));
             return true;
         }
@@ -127,4 +129,3 @@ public final class AdminCommand implements CommandExecutor, TabCompleter {
         return options.stream().filter(value -> value.startsWith(prefix)).toList();
     }
 }
-

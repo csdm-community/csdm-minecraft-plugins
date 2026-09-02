@@ -10,7 +10,8 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import tv.csdm.minecraft.admin.CSDMAdminPlugin;
 
 public final class AdminPlayerListener implements Listener {
-    private static final String BYPASS = "csdm.admin.bypass";
+    private static final String ADMIN_BYPASS = "csdm.admin.bypass";
+    private static final String MAINTENANCE_BYPASS = "csdm.maintenance.bypass";
     private final CSDMAdminPlugin plugin;
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
@@ -21,16 +22,16 @@ public final class AdminPlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         var player = event.getPlayer();
-        if (plugin.settings().maintenanceEnabled() && !player.hasPermission(BYPASS)) {
+        if (plugin.settings().maintenanceEnabled() && !player.hasPermission(MAINTENANCE_BYPASS)) {
             event.joinMessage(null);
             player.kick(miniMessage.deserialize(plugin.settings().maintenanceKickMessage()));
             return;
         }
         if (plugin.settings().forceAdventure()
-                && !(plugin.settings().staffBypassKeepsGamemode() && player.hasPermission(BYPASS))) {
+                && !(plugin.settings().staffBypassKeepsGamemode() && player.hasPermission(ADMIN_BYPASS))) {
             player.setGameMode(GameMode.ADVENTURE);
         }
-        player.setAllowFlight(plugin.settings().allowFlight() || player.hasPermission(BYPASS));
+        player.setAllowFlight(plugin.settings().allowFlight());
         if (plugin.settings().teleportToSpawnOnJoin()) {
             plugin.getServer().getScheduler().runTask(plugin, () ->
                     plugin.worldPolicyService().configuredSpawn().ifPresent(player::teleportAsync));

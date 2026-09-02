@@ -19,11 +19,24 @@ public final class StaffRankRegistry {
     }
 
     public static StaffRankRegistry load(FileConfiguration config) {
-        ConfigurationSection section = config.getConfigurationSection("staff-ranks");
-        if (section == null) {
-            throw new IllegalArgumentException("config.yml no contiene staff-ranks");
-        }
         Map<String, StaffRankDefinition> definitions = new LinkedHashMap<>();
+        loadSection(config, definitions, "functional-ranks", RankKind.FUNCTIONAL);
+        loadSection(config, definitions, "prestige-ranks", RankKind.PRESTIGE);
+        if (definitions.isEmpty()) {
+            throw new IllegalArgumentException("config.yml no contiene rangos CSDM");
+        }
+        return new StaffRankRegistry(definitions);
+    }
+
+    private static void loadSection(
+            FileConfiguration config,
+            Map<String, StaffRankDefinition> definitions,
+            String path,
+            RankKind kind) {
+        ConfigurationSection section = config.getConfigurationSection(path);
+        if (section == null) {
+            throw new IllegalArgumentException("config.yml no contiene " + path);
+        }
         for (String rawId : section.getKeys(false)) {
             String id = normalize(rawId);
             ConfigurationSection rank = section.getConfigurationSection(rawId);
@@ -37,9 +50,10 @@ public final class StaffRankRegistry {
                     rank.getString("display-name", id),
                     rank.getString("prefix", ""),
                     rank.getInt("priority", 1),
+                    kind,
+                    rank.getStringList("inherits"),
                     rank.getStringList("permissions")));
         }
-        return new StaffRankRegistry(definitions);
     }
 
     public Optional<StaffRankDefinition> find(String id) {
@@ -61,8 +75,14 @@ public final class StaffRankRegistry {
         return definitions.values().stream().map(StaffRankDefinition::group).collect(Collectors.toUnmodifiableSet());
     }
 
+    public Set<String> managedGroups(RankKind kind) {
+        return definitions.values().stream()
+                .filter(rank -> rank.kind() == kind)
+                .map(StaffRankDefinition::group)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
     private static String normalize(String value) {
         return value.trim().toLowerCase(Locale.ROOT).replace('_', '-');
     }
 }
-
