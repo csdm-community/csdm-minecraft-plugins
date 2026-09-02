@@ -23,7 +23,10 @@ public record VerifySettings(
         int maxClientProtocol,
         boolean allowUnknownClientVersion,
         int kickAfterSuccessSeconds,
-        boolean blockChat) {
+        boolean blockChat,
+        String verificationWorldName,
+        String museumWorldName,
+        int verificationSpawnY) {
 
     public static VerifySettings load(JavaPlugin plugin) {
         FileConfiguration config = plugin.getConfig();
@@ -58,6 +61,12 @@ public record VerifySettings(
             throw new IllegalArgumentException("max-protocol no puede ser menor que min-protocol");
         }
 
+        String verificationWorld = nonBlank(config, "worlds.verification", "verify_void");
+        String museumWorld = nonBlank(config, "worlds.museum", "lobby");
+        if (verificationWorld.equalsIgnoreCase(museumWorld)) {
+            throw new IllegalArgumentException("los mundos de verificacion y museo deben ser diferentes");
+        }
+
         return new VerifySettings(
                 enabled,
                 uri,
@@ -72,7 +81,10 @@ public record VerifySettings(
                 maxProtocol,
                 config.getBoolean("client-versions.allow-unknown", true),
                 positive(config, "experience.kick-after-success-seconds", 5),
-                config.getBoolean("experience.block-chat", true));
+                config.getBoolean("experience.block-chat", true),
+                verificationWorld,
+                museumWorld,
+                config.getInt("worlds.verification-spawn-y", 100));
     }
 
     public String normalizeCode(String input) {
@@ -106,6 +118,11 @@ public record VerifySettings(
         return value.trim();
     }
 
+    private static String nonBlank(FileConfiguration config, String path, String fallback) {
+        String value = config.getString(path, fallback);
+        return value == null || value.isBlank() ? fallback : value.trim();
+    }
+
     private static int positive(FileConfiguration config, String path, int fallback) {
         int value = config.getInt(path, fallback);
         if (value <= 0) {
@@ -114,4 +131,3 @@ public record VerifySettings(
         return value;
     }
 }
-
