@@ -23,6 +23,7 @@ import tv.csdm.minecraft.verify.model.VerificationRequest;
 import tv.csdm.minecraft.verify.model.VerificationResponse;
 import tv.csdm.minecraft.verify.service.VerificationCoordinator;
 import tv.csdm.minecraft.verify.version.ClientVersionResolver;
+import tv.csdm.minecraft.verify.world.WorldRoutingService;
 
 public final class VerifyCommand implements CommandExecutor, TabCompleter {
     private final CSDMVerifyPlugin plugin;
@@ -30,18 +31,21 @@ public final class VerifyCommand implements CommandExecutor, TabCompleter {
     private final Messages messages;
     private final VerificationCoordinator coordinator;
     private final ClientVersionResolver versionResolver;
+    private final WorldRoutingService routing;
 
     public VerifyCommand(
             CSDMVerifyPlugin plugin,
             VerifySettings settings,
             Messages messages,
             VerificationCoordinator coordinator,
-            ClientVersionResolver versionResolver) {
+            ClientVersionResolver versionResolver,
+            WorldRoutingService routing) {
         this.plugin = plugin;
         this.settings = settings;
         this.messages = messages;
         this.coordinator = coordinator;
         this.versionResolver = versionResolver;
+        this.routing = routing;
     }
 
     @Override
@@ -56,6 +60,10 @@ public final class VerifyCommand implements CommandExecutor, TabCompleter {
         }
         if (!settings.enabled()) {
             player.sendMessage(messages.prefixed("disabled"));
+            return true;
+        }
+        if (!routing.isVerificationWorld(player.getWorld())) {
+            player.sendMessage(messages.prefixed("verify-world-only"));
             return true;
         }
         if (args.length != 1) {
