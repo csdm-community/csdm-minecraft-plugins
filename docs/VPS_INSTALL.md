@@ -1,91 +1,134 @@
 # Instalación en el VPS de CSDM Verify
 
-## 1. Detener Paper
+Esta guía corresponde a CSDM Minecraft Plugins 0.3.0 y al servicio systemd
+`csdm-verify` ubicado en `/opt/csdm-verify/server`.
 
-En la consola interactiva donde aparece `>` escribe:
-
-```text
-stop
-```
-
-Espera a volver al prompt `root@srv1948605:...#`.
-
-## 2. Instalar plugins públicos
-
-Sube `install-public-plugins.sh` y `bStats-config.yml` a la misma carpeta del
-servidor y ejecuta:
+## 1. Detener Paper y crear un respaldo
 
 ```bash
-chmod 0750 install-public-plugins.sh
+systemctl stop csdm-verify
+systemctl is-active csdm-verify
+
+backup_dir="/opt/csdm-verify/backups/plugins-$(date -u +%Y%m%dT%H%M%SZ)"
+install -d -m 0750 "$backup_dir"
+cp -a /opt/csdm-verify/server/plugins "$backup_dir/plugins"
+cp -a /etc/csdm-verify.env "$backup_dir/csdm-verify.env"
+```
+
+`systemctl is-active` debe responder `inactive` antes de reemplazar los JAR.
+
+## 2. Instalar los plugins públicos
+
+Desde el directorio descomprimido de la versión:
+
+```bash
+chmod 0750 install-public-plugins.sh install-custom-plugins.sh
 ./install-public-plugins.sh /opt/csdm-verify/server
 ```
 
-Instala versiones fijadas y verificadas por SHA-512 de:
+Instala versiones fijadas y verificadas por SHA-512 de LuckPerms, FancyNpcs y
+FancyHolograms. ViaVersion y ViaBackwards deben permanecer instalados.
 
-- LuckPerms 5.5.71 (Bukkit/Paper)
-- FancyNpcs 2.11.0
-- FancyHolograms 2.11.0
-
-El instalador deja la telemetría bStats desactivada antes del primer arranque.
-Si encuentra una configuración previa con telemetría habilitada, se detiene y
-no instala nada hasta que la revises.
-
-ViaVersion y ViaBackwards ya deben permanecer instalados.
+Si el script informa que bStats ya está habilitado, revisa
+`plugins/bStats/config.yml`, cambia `enabled: false` y repite el comando.
 
 ## 3. Instalar los plugins CSDM
 
-Coloca `CSDMVerify.jar`, `CSDMCommunity.jar`, `CSDMAdmin.jar` y
-`install-custom-plugins.sh` en una carpeta temporal del VPS. Luego ejecuta:
-
 ```bash
-chmod 0750 install-custom-plugins.sh
 ./install-custom-plugins.sh /opt/csdm-verify/server "$(pwd)"
 ```
 
-## 4. Primera prueba
+El instalador valida los JAR y coloca `CSDMVerify.jar`, `CSDMCommunity.jar` y
+`CSDMAdmin.jar`.
 
-Mantén `CSDMVerify` desactivado hasta disponer del endpoint del backend. Inicia
-Paper una vez para generar las configuraciones. Comprueba que aparecen:
+## 4. Migrar la configuración de 0.2.0
 
-```text
-[CSDMAdmin] ... enabled
-[CSDMCommunity] ... enabled
-[CSDMVerify] Verificacion desactivada
+El modelo anterior de rangos no es compatible con 0.3.0. Conserva su copia y
+permite que `CSDMCommunity` genere la nueva configuración:
+
+```bash
+community_config=/opt/csdm-verify/server/plugins/CSDMCommunity/config.yml
+if test -f "$community_config"; then
+  mv "$community_config" "${community_config}.pre-0.3.0"
+fi
 ```
 
-Antes de abrir el servidor al público, configura el spawn con:
+En `CSDMAdmin`, desactiva el vuelo global. Los rangos autorizados usarán
+`/fly`:
 
-```text
-/csdmadmin setspawn
+```bash
+admin_config=/opt/csdm-verify/server/plugins/CSDMAdmin/config.yml
+if test -f "$admin_config"; then
+  sed -i 's/^  allow-flight: true$/  allow-flight: false/' "$admin_config"
+fi
 ```
 
-Concede el rango propietario a `7245` desde la consola de Paper:
+No elimines `CSDMAdmin/config.yml`: contiene el spawn configurado del lobby.
+
+## 5. Secreto del puente de moderación
+
+La misma cadena aleatoria debe configurarse como secreto de la Edge Function
+`CSDM_MINECRAFT_ADMIN_SECRET` y en el VPS. No uses una clave `service_role`.
+
+En `/etc/csdm-verify.env`:
 
 ```text
-lp user 7245 parent set csdm-owner
+CSDM_MINECRAFT_ADMIN_SECRET=REEMPLAZAR_CON_SECRETO_ALEATORIO_DE_64_CARACTERES
 ```
 
-La primera vez, `7245` debe haber entrado al menos una vez para evitar errores
-de resolución del perfil. LuckPerms también admite el UUID autenticado.
+En `/opt/csdm-verify/server/plugins/CSDMAdmin/config.yml`:
 
-Mientras el servidor siga en pruebas puedes conservar la whitelist y ejecutar:
+```yaml
+moderation:
+  backend-url: "https://PROJECT_REF.supabase.co/functions/v1/minecraft-moderation"
+  internal-secret-env: "CSDM_MINECRAFT_ADMIN_SECRET"
+  request-timeout-seconds: 5
+```
+
+La sanción local funciona aunque este puente aún no esté configurado.
+
+## 6. Iniciar y comprobar
+
+```bash
+chown -R minecraft:minecraft /opt/csdm-verify/server/plugins
+systemctl start csdm-verify
+systemctl status csdm-verify --no-pager
+journalctl -u csdm-verify -n 160 --no-pager
+```
+
+Comprueba que `CSDMVerify`, `CSDMCommunity` y `CSDMAdmin` aparecen habilitados y
+que no hay stack traces.
+
+## 7. Asignar Dirección a 7245
+
+Después de que `7245` entre al servidor, ejecuta en la consola de Paper:
 
 ```text
-whitelist add 7245
+rangos asignar 7245 direccion
 ```
 
-Cuando `verify.csdm.tv` se abra al público, cambia `white-list=false` y
-`enforce-whitelist=false`; de lo contrario, los usuarios no podrán verificar
-sus cuentas.
+También puedes usar directamente LuckPerms:
 
-## 5. Activar CSDMVerify
+```text
+lp user 7245 parent set csdm-direccion
+```
 
-Configura `plugins/CSDMVerify/config.yml`, define el secreto como variable de
-entorno `CSDM_INTERNAL_SECRET` en el servicio de Paper y cambia `enabled: true`.
-Nunca coloques una clave `service_role` de Supabase en el plugin.
+Los rangos de prestigio son independientes. Por ejemplo:
 
-## 6. MOTD e icono
+```text
+rangos asignar 7245 inmortal
+```
 
-El MOTD se configura en `plugins/CSDMAdmin/config.yml`. Paper cargará como
-icono `server-icon.png` si el archivo es PNG de 64 × 64 y se coloca junto a
-`paper.jar`.
+## 8. Comandos principales
+
+```text
+/staff                  Activa o desactiva Staff Mode
+/sm                     Alias corto de /staff
+/fly                    Activa o desactiva el vuelo autorizado
+/rangos                 Consulta los rangos disponibles
+/sancionar              Abre el flujo de sanciones
+```
+
+Conserva `online-mode=true`. Cuando `verify.csdm.tv` se abra al público cambia
+`white-list=false` y `enforce-whitelist=false`; mientras siga en pruebas puedes
+mantener `7245` en la whitelist.
