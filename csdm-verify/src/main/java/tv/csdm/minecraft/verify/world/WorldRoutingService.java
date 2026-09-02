@@ -28,6 +28,9 @@ public final class WorldRoutingService {
     }
 
     public void sendToMuseum(Player player) {
+        if (player.getWorld().getName().equals(settings.museumWorldName())) {
+            return;
+        }
         World museum = Bukkit.getWorld(settings.museumWorldName());
         if (museum == null) {
             plugin.getLogger().warning("No se encontro el mundo museo: " + settings.museumWorldName());
