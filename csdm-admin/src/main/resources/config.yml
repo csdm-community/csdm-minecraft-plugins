@@ -1,0 +1,44 @@
+world:
+  name: "lobby"
+  permanent-night: true
+  fixed-time: 18000
+  lock-weather: true
+  peaceful: true
+  disable-mob-spawning: true
+  disable-fire-tick: true
+  pvp: false
+  enforce-every-seconds: 60
+
+players:
+  force-adventure: true
+  allow-flight: true
+  teleport-to-spawn-on-join: true
+  rescue-below-y: -20
+  staff-bypass-keeps-gamemode: true
+
+protection:
+  enabled: true
+  block-breaking: true
+  block-placing: true
+  block-interactions: true
+  block-item-drops: true
+
+maintenance:
+  enabled: false
+  kick-message: "<aqua><bold>ARCHIVO CSDM</bold></aqua>\n<gray>La terminal esta en mantenimiento. Vuelve pronto.</gray>"
+
+motd:
+  enabled: true
+  online-line-1: "<gradient:#00E5FF:#B86BFF><bold>✦ ARCHIVO CSDM ✦</bold></gradient>"
+  online-line-2: "<gray>Verifica tu identidad <dark_gray>•</dark_gray> <white>Java 1.21–26.2</white></gray>"
+  maintenance-line-1: "<gold><bold>⚙ ARCHIVO CSDM • MANTENIMIENTO</bold></gold>"
+  maintenance-line-2: "<gray>La terminal volvera pronto</gray>"
+
+spawn:
+  configured: false
+  world: "lobby"
+  x: 0.5
+  y: 64.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0

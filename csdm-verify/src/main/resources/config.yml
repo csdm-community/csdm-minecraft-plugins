@@ -1,0 +1,28 @@
+enabled: false
+
+backend:
+  url: "https://PROJECT_REF.supabase.co/functions/v1/verify-minecraft-link"
+  secret-env: "CSDM_INTERNAL_SECRET"
+  # Solo para desarrollo local. En produccion debe permanecer vacio.
+  secret: ""
+  timeout-seconds: 5
+  allow-insecure-http: false
+
+codes:
+  regex: "^[A-Z0-9]{4}-[A-Z0-9]{4}$"
+  max-length: 16
+
+rate-limit:
+  cooldown-seconds: 5
+  attempts: 5
+  window-seconds: 60
+
+client-versions:
+  min-protocol: 767
+  max-protocol: 776
+  allow-unknown: true
+
+experience:
+  kick-after-success-seconds: 5
+  block-chat: true
+

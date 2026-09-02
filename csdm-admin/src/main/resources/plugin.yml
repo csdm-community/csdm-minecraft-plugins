@@ -1,0 +1,19 @@
+name: CSDMAdmin
+version: '${version}'
+main: tv.csdm.minecraft.admin.CSDMAdminPlugin
+description: Administracion operativa y proteccion del lobby CSDM
+author: CSDM
+website: https://csdm.tv
+api-version: '26.2'
+commands:
+  csdmadmin:
+    description: Administra las politicas del servidor CSDM
+    usage: /csdmadmin <estado|noche|mantenimiento|spawn|setspawn|aplicar|recargar>
+permissions:
+  csdm.admin.manage:
+    description: Permite administrar CSDMAdmin
+    default: op
+  csdm.admin.bypass:
+    description: Omite protecciones y restricciones del lobby
+    default: op
+

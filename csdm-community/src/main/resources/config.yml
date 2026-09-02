@@ -1,0 +1,60 @@
+staff-ranks:
+  owner:
+    group: "csdm-owner"
+    display-name: "Dirección"
+    prefix: "<gradient:#00E5FF:#9B5CFF><bold>DIRECCIÓN</bold></gradient> <dark_gray>•</dark_gray> "
+    priority: 100
+    permissions:
+      - "csdm.*"
+  admin:
+    group: "csdm-admin"
+    display-name: "Administración"
+    prefix: "<aqua><bold>ADMIN</bold></aqua> <dark_gray>•</dark_gray> "
+    priority: 90
+    permissions:
+      - "csdm.admin.*"
+      - "csdm.staff.manage"
+      - "csdm.medals.manage"
+  moderator:
+    group: "csdm-moderator"
+    display-name: "Moderación"
+    prefix: "<blue><bold>MOD</bold></blue> <dark_gray>•</dark_gray> "
+    priority: 70
+    permissions:
+      - "csdm.admin.bypass"
+      - "csdm.staff.view"
+      - "csdm.medals.view"
+  editorial:
+    group: "csdm-editorial"
+    display-name: "Editorial"
+    prefix: "<light_purple><bold>EDITORIAL</bold></light_purple> <dark_gray>•</dark_gray> "
+    priority: 60
+    permissions:
+      - "csdm.staff.view"
+      - "csdm.medals.view"
+  builder:
+    group: "csdm-builder"
+    display-name: "Construcción"
+    prefix: "<yellow><bold>BUILDER</bold></yellow> <dark_gray>•</dark_gray> "
+    priority: 50
+    permissions:
+      - "csdm.admin.bypass"
+      - "csdm.verify.bypass-protection"
+
+storage:
+  # MVP local. La siguiente fase sustituira este repositorio por el endpoint interno de CSDM.
+  type: "yaml"
+
+presence-messages:
+  enabled: true
+  join: "<dark_gray>✦</dark_gray> <aqua>El Archivo ha reconocido a <white><player></white>.</aqua><medal>"
+  first-join: "<gradient:#00E5FF:#B86BFF><bold><player> entra por primera vez al Archivo CSDM.</bold></gradient>"
+  quit: "<dark_gray>✦ <gray><player> abandono el Archivo.</gray></dark_gray><medal>"
+  show-featured-medal: true
+  join-rank-overrides:
+    owner: "<gradient:#00E5FF:#B86BFF><bold>✦ DIRECCIÓN · <player> ha entrado al Archivo.</bold></gradient>"
+    admin: "<aqua><bold>⚙ ADMIN · <player></bold> ha entrado a la terminal.</aqua>"
+    moderator: "<blue><bold>◆ MOD · <player></bold> esta en linea.</blue>"
+  quit-rank-overrides:
+    owner: "<dark_gray>✦ <player> cerro la sesión de Dirección.</dark_gray>"
+    admin: "<dark_gray>⚙ ADMIN · <player> abandono la terminal.</dark_gray>"

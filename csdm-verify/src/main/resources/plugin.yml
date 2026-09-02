@@ -1,0 +1,21 @@
+name: CSDMVerify
+version: '${version}'
+main: tv.csdm.minecraft.verify.CSDMVerifyPlugin
+description: Verificacion segura de UUID de Minecraft para CSDM.tv
+author: CSDM
+website: https://csdm.tv
+api-version: '26.2'
+softdepend: [ViaVersion]
+commands:
+  verificar:
+    description: Vincula tu cuenta autenticada de Minecraft con CSDM
+    usage: /verificar <codigo>
+    permission: csdm.verify
+permissions:
+  csdm.verify:
+    description: Permite ejecutar el flujo de verificacion
+    default: true
+  csdm.verify.bypass-protection:
+    description: Omite las protecciones del lobby de verificacion
+    default: op
+

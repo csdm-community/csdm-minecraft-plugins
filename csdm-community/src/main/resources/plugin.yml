@@ -1,0 +1,30 @@
+name: CSDMCommunity
+version: '${version}'
+main: tv.csdm.minecraft.community.CSDMCommunityPlugin
+description: Rangos de staff y medallas para la comunidad CSDM
+author: CSDM
+website: https://csdm.tv
+api-version: '26.2'
+depend: [LuckPerms]
+commands:
+  medalla:
+    description: Administra y consulta medallas CSDM
+    usage: /medalla <lista|otorgar|retirar|destacar|recargar>
+    aliases: [medallas]
+  staff:
+    description: Administra los rangos de staff delegados a LuckPerms
+    usage: /staff <lista|ver|asignar|retirar|recargar>
+permissions:
+  csdm.medals.view:
+    description: Permite consultar medallas
+    default: true
+  csdm.medals.manage:
+    description: Permite otorgar y retirar medallas
+    default: op
+  csdm.staff.view:
+    description: Permite consultar rangos de staff
+    default: true
+  csdm.staff.manage:
+    description: Permite asignar rangos de staff
+    default: op
+

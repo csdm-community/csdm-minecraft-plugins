@@ -1,0 +1,26 @@
+medals:
+  beta-tester:
+    name: "Beta Tester"
+    symbol: "✦"
+    color: "#00E5FF"
+    description: "Participo activamente en una fase beta oficial de CSDM."
+  campeon-temporada:
+    name: "Campeón de Temporada"
+    symbol: "♛"
+    color: "#FFD166"
+    description: "Finalizo una temporada oficial en la primera posicion."
+  maestro-umbral:
+    name: "Maestro del Umbral"
+    symbol: "◆"
+    color: "#B86BFF"
+    description: "Demostro dominio excepcional en la dificultad Imposible."
+  archivista:
+    name: "Archivista"
+    symbol: "▣"
+    color: "#5CE1E6"
+    description: "Contribuyo de forma sustancial al Archivo CSDM."
+  colaborador-editorial:
+    name: "Colaborador Editorial"
+    symbol: "✎"
+    color: "#FF62C7"
+    description: "Aporto contenido revisado y publicado por Editorial."
