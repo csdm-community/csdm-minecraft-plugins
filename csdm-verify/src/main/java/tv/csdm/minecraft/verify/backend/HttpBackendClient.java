@@ -4,8 +4,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import tv.csdm.minecraft.verify.config.VerifySettings;
+import tv.csdm.minecraft.verify.model.IdentityStatusResponse;
 import tv.csdm.minecraft.verify.model.VerificationRequest;
 import tv.csdm.minecraft.verify.model.VerificationResponse;
 import tv.csdm.minecraft.verify.model.VerificationResult;
@@ -24,18 +26,29 @@ public final class HttpBackendClient implements BackendClient {
 
     @Override
     public CompletableFuture<VerificationResponse> verify(VerificationRequest request) {
+        return send(JsonCodec.encode(request))
+                .thenApply(response -> BackendResponseMapper.map(response.statusCode(), response.body()))
+                .exceptionally(ignored -> new VerificationResponse(VerificationResult.NETWORK_ERROR, 0));
+    }
+
+    @Override
+    public CompletableFuture<IdentityStatusResponse> identityStatus(UUID minecraftUuid) {
+        return send(JsonCodec.encodeStatus(minecraftUuid))
+                .thenApply(response -> response.statusCode() == 200
+                        ? new IdentityStatusResponse(JsonCodec.booleanField(response.body(), "linked"), true)
+                        : new IdentityStatusResponse(false, false))
+                .exceptionally(ignored -> new IdentityStatusResponse(false, false));
+    }
+
+    private CompletableFuture<HttpResponse<String>> send(String body) {
         HttpRequest httpRequest = HttpRequest.newBuilder(settings.backendUri())
                 .timeout(settings.requestTimeout())
                 .header("Authorization", "Bearer " + settings.internalSecret())
                 .header("Content-Type", "application/json; charset=utf-8")
                 .header("Accept", "application/json")
-                .header("User-Agent", "CSDMVerify/0.1")
-                .POST(HttpRequest.BodyPublishers.ofString(JsonCodec.encode(request), StandardCharsets.UTF_8))
+                .header("User-Agent", "CSDMVerify/0.2")
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                 .build();
-
-        return client.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
-                .thenApply(response -> BackendResponseMapper.map(response.statusCode(), response.body()))
-                .exceptionally(ignored -> new VerificationResponse(VerificationResult.NETWORK_ERROR, 0));
+        return client.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
 }
-
