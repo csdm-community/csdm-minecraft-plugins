@@ -27,3 +27,7 @@ experience:
   kick-after-success-seconds: 5
   block-chat: true
 
+worlds:
+  verification: "verify_void"
+  museum: "lobby"
+  verification-spawn-y: 100
