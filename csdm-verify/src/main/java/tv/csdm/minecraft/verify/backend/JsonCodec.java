@@ -1,5 +1,6 @@
 package tv.csdm.minecraft.verify.backend;
 
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import tv.csdm.minecraft.verify.model.VerificationRequest;
@@ -18,14 +19,29 @@ final class JsonCodec {
                 "}";
     }
 
+    static String encodeStatus(UUID minecraftUuid) {
+        return "{" + field("action", "status") + "," +
+                field("minecraftUuid", minecraftUuid.toString()) + "}";
+    }
+
     static String stringField(String body, String fieldName) {
         if (body == null || body.isBlank()) {
             return null;
         }
-        Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(fieldName)
-                + "\\\"\\s*:\\s*\\\"((?:\\\\.|[^\\\"])*)\\\"");
+        Pattern pattern = Pattern.compile("\\"" + Pattern.quote(fieldName)
+                + "\\"\\s*:\\s*\\"((?:\\\\.|[^\\"])*)\\"");
         Matcher matcher = pattern.matcher(body);
         return matcher.find() ? unescape(matcher.group(1)) : null;
+    }
+
+    static boolean booleanField(String body, String fieldName) {
+        if (body == null || body.isBlank()) {
+            return false;
+        }
+        Pattern pattern = Pattern.compile("\\"" + Pattern.quote(fieldName)
+                + "\\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(body);
+        return matcher.find() && Boolean.parseBoolean(matcher.group(1));
     }
 
     private static String field(String name, String value) {
@@ -70,4 +86,3 @@ final class JsonCodec {
                 .replace("\\\\", "\\");
     }
 }
-
