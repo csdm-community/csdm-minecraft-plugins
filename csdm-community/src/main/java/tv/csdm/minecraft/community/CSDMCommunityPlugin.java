@@ -39,6 +39,7 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
         staffRankRegistry = StaffRankRegistry.load(getConfig());
         medalService = new MedalService(medalRegistry, new YamlMedalRepository(this));
         staffRankService = new StaffRankService(this, luckPerms, staffRankRegistry);
+        staffRankService.clearManagedNametags();
         staffRankService.ensureManagedGroups();
 
         MedalCommand medalCommand = new MedalCommand(this, medalService);
@@ -54,6 +55,11 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new StaffDisplayListener(this, staffRankService), this);
         getServer().getPluginManager().registerEvents(
                 new CommunityPresenceListener(this, staffRankService, medalService), this);
+        long refreshTicks = Math.max(20L, getConfig().getLong("nametags.refresh-ticks", 100L));
+        getServer().getScheduler().runTaskTimer(this, () ->
+                getServer().getOnlinePlayers().forEach(staffRankService::syncDisplay),
+                refreshTicks,
+                refreshTicks);
         getLogger().info("CSDMCommunity activo con " + medalRegistry.all().size()
                 + " medallas y " + staffRankRegistry.all().size() + " rangos administrados.");
     }
@@ -65,5 +71,13 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
         medalService.replaceRegistry(medalRegistry);
         staffRankService.replaceRegistry(staffRankRegistry);
         staffRankService.ensureManagedGroups();
+        getServer().getOnlinePlayers().forEach(staffRankService::syncDisplay);
+    }
+
+    @Override
+    public void onDisable() {
+        if (staffRankService != null) {
+            staffRankService.clearManagedNametags();
+        }
     }
 }
