@@ -12,6 +12,10 @@ El módulo de comunidad también personaliza los mensajes de entrada/salida. El
 módulo de administración publica un MOTD de dos líneas y mantiene la noche y el
 clima sin depender de EssentialsX.
 
+Los rangos funcionales aparecen antes del nick sobre la cabeza de cada jugador
+y los rangos de prestigio después. El formato se actualiza también cuando el
+cambio se hace directamente con LuckPerms.
+
 ## Requisitos
 
 - Paper 26.2 build 121 o posterior compatible.
