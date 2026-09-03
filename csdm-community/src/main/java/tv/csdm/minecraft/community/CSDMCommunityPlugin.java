@@ -11,6 +11,7 @@ import tv.csdm.minecraft.community.command.StaffCommand;
 import tv.csdm.minecraft.community.medal.MedalRegistry;
 import tv.csdm.minecraft.community.medal.MedalService;
 import tv.csdm.minecraft.community.medal.YamlMedalRepository;
+import tv.csdm.minecraft.community.presence.CommunityChatListener;
 import tv.csdm.minecraft.community.presence.CommunityPresenceListener;
 import tv.csdm.minecraft.community.staff.StaffDisplayListener;
 import tv.csdm.minecraft.community.staff.StaffRankRegistry;
@@ -56,6 +57,7 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
         ranks.setTabCompleter(staffCommand);
 
         getServer().getPluginManager().registerEvents(new StaffDisplayListener(this, staffRankService), this);
+        getServer().getPluginManager().registerEvents(new CommunityChatListener(), this);
         getServer().getPluginManager().registerEvents(
                 new CommunityPresenceListener(this, staffRankService, medalService), this);
         long refreshTicks = Math.max(20L, getConfig().getLong("nametags.refresh-ticks", 100L));
