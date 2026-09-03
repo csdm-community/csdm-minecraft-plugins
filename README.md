@@ -15,6 +15,7 @@ clima sin depender de EssentialsX.
 Los rangos funcionales aparecen antes del nick sobre la cabeza de cada jugador
 y los rangos de prestigio después. El formato se actualiza también cuando el
 cambio se hace directamente con LuckPerms.
+En el chat, el nombre se muestra sin corchetes angulares: `RANGO • Nick: mensaje`.
 
 ## Requisitos
 
