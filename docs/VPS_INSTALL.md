@@ -1,6 +1,6 @@
 # Instalación en el VPS de CSDM Verify
 
-Esta guía corresponde a CSDM Minecraft Plugins 0.3.0 y al servicio systemd
+Esta guía corresponde a CSDM Minecraft Plugins 0.3.1 y al servicio systemd
 `csdm-verify` ubicado en `/opt/csdm-verify/server`.
 
 ## 1. Detener Paper y crear un respaldo
@@ -99,6 +99,12 @@ journalctl -u csdm-verify -n 160 --no-pager
 Comprueba que `CSDMVerify`, `CSDMCommunity` y `CSDMAdmin` aparecen habilitados y
 que no hay stack traces.
 
+La actualización 0.3.1 conserva la configuración existente. Al iniciar,
+`CSDMVerify` incorpora únicamente las claves de mensajes que falten; así se
+reparan `museum-title` y `museum-subtitle` sin borrar textos personalizados.
+`CSDMCommunity` activa los tags sobre los jugadores incluso si el bloque
+`nametags` todavía no existe en el `config.yml` del VPS.
+
 ## 7. Asignar Dirección a 7245
 
 Después de que `7245` entre al servidor, ejecuta en la consola de Paper:
@@ -117,6 +123,12 @@ Los rangos de prestigio son independientes. Por ejemplo:
 
 ```text
 rangos asignar 7245 inmortal
+```
+
+El resultado visible sobre el jugador será:
+
+```text
+DIRECCIÓN • 7245 • INMORTAL
 ```
 
 ## 8. Comandos principales
