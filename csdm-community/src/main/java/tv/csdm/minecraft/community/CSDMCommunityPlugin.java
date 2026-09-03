@@ -1,5 +1,6 @@
 package tv.csdm.minecraft.community;
 
+import java.io.File;
 import java.util.Objects;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -24,7 +25,9 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        saveResource("medals.yml", false);
+        if (!new File(getDataFolder(), "medals.yml").isFile()) {
+            saveResource("medals.yml", false);
+        }
 
         LuckPerms luckPerms;
         try {
