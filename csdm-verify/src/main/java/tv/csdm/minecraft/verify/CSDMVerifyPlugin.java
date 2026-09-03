@@ -1,5 +1,6 @@
 package tv.csdm.minecraft.verify;
 
+import java.io.File;
 import java.util.Objects;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,7 +21,9 @@ public final class CSDMVerifyPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        saveResource("messages.yml", false);
+        if (!new File(getDataFolder(), "messages.yml").isFile()) {
+            saveResource("messages.yml", false);
+        }
 
         try {
             settings = VerifySettings.load(this);
