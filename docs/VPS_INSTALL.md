@@ -1,6 +1,6 @@
 # Instalación en el VPS de CSDM Verify
 
-Esta guía corresponde a CSDM Minecraft Plugins 0.3.1 y al servicio systemd
+Esta guía corresponde a CSDM Minecraft Plugins 0.3.2 y al servicio systemd
 `csdm-verify` ubicado en `/opt/csdm-verify/server`.
 
 ## 1. Detener Paper y crear un respaldo
@@ -99,7 +99,7 @@ journalctl -u csdm-verify -n 160 --no-pager
 Comprueba que `CSDMVerify`, `CSDMCommunity` y `CSDMAdmin` aparecen habilitados y
 que no hay stack traces.
 
-La actualización 0.3.1 conserva la configuración existente. Al iniciar,
+La actualización 0.3.2 conserva la configuración existente. Al iniciar,
 `CSDMVerify` incorpora únicamente las claves de mensajes que falten; así se
 reparan `museum-title` y `museum-subtitle` sin borrar textos personalizados.
 `CSDMCommunity` activa los tags sobre los jugadores incluso si el bloque
