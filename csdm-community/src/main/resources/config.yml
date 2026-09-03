@@ -68,6 +68,15 @@ prestige-ranks:
     prefix: "<gold><bold>INMORTAL</bold></gold> <dark_gray>•</dark_gray> "
     priority: 300
 
+nametags:
+  # Rango funcional antes del nick y prestigio despues del nick.
+  enabled: true
+  show-functional: true
+  show-prestige: true
+  separator: "<dark_gray> • </dark_gray>"
+  # Tambien detecta cambios hechos directamente con comandos de LuckPerms.
+  refresh-ticks: 100
+
 storage:
   # MVP local. La siguiente fase sustituira este repositorio por el endpoint interno de CSDM.
   type: "yaml"
