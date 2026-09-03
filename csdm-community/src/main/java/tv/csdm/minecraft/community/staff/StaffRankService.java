@@ -3,6 +3,7 @@ package tv.csdm.minecraft.community.staff;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -14,10 +15,15 @@ import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.node.types.PermissionNode;
 import net.luckperms.api.node.types.PrefixNode;
 import net.luckperms.api.node.types.WeightNode;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 public final class StaffRankService {
+    private static final String TEAM_PREFIX = "csdm_t_";
+
     private final JavaPlugin plugin;
     private final LuckPerms luckPerms;
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
@@ -99,6 +105,22 @@ public final class StaffRankService {
         name = name.append(Component.text(player.getName()));
         player.playerListName(name);
         player.displayName(name);
+        syncNametag(player, functional, prestige);
+    }
+
+    public void removeDisplay(Player player) {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        Team team = scoreboard.getEntryTeam(player.getName());
+        if (team != null && team.getName().startsWith(TEAM_PREFIX)) {
+            team.unregister();
+        }
+    }
+
+    public void clearManagedNametags() {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        Set.copyOf(scoreboard.getTeams()).stream()
+                .filter(team -> team.getName().startsWith(TEAM_PREFIX))
+                .forEach(Team::unregister);
     }
 
     public void ensureManagedGroups() {
@@ -149,5 +171,43 @@ public final class StaffRankService {
             }
         }
         return changed;
+    }
+
+    private void syncNametag(
+            Player player,
+            Optional<StaffRankDefinition> functional,
+            Optional<StaffRankDefinition> prestige) {
+        if (!plugin.getConfig().getBoolean("nametags.enabled", true)) {
+            removeDisplay(player);
+            return;
+        }
+
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        String teamName = teamName(player);
+        Team team = scoreboard.getTeam(teamName);
+        if (team == null) {
+            team = scoreboard.registerNewTeam(teamName);
+        }
+        String separator = plugin.getConfig().getString(
+                "nametags.separator", "<dark_gray> • </dark_gray>");
+
+        if (plugin.getConfig().getBoolean("nametags.show-functional", true) && functional.isPresent()) {
+            team.prefix(miniMessage.deserialize(functional.get().nametagLabel() + separator));
+        } else {
+            team.prefix(Component.empty());
+        }
+        if (plugin.getConfig().getBoolean("nametags.show-prestige", true) && prestige.isPresent()) {
+            team.suffix(miniMessage.deserialize(separator + prestige.get().nametagLabel()));
+        } else {
+            team.suffix(Component.empty());
+        }
+
+        team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+        team.addEntry(player.getName());
+    }
+
+    private String teamName(Player player) {
+        String compactUuid = player.getUniqueId().toString().replace("-", "");
+        return TEAM_PREFIX + compactUuid.substring(0, 8);
     }
 }

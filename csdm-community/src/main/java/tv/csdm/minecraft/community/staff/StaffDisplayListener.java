@@ -3,6 +3,7 @@ package tv.csdm.minecraft.community.staff;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class StaffDisplayListener implements Listener {
@@ -22,5 +23,10 @@ public final class StaffDisplayListener implements Listener {
                 service.syncDisplay(event.getPlayer());
             }
         }, 5L));
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        service.removeDisplay(event.getPlayer());
     }
 }

@@ -1,6 +1,9 @@
 package tv.csdm.minecraft.verify.config;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +27,21 @@ public final class Messages {
 
     public static Messages load(JavaPlugin plugin) {
         File file = new File(plugin.getDataFolder(), "messages.yml");
-        return new Messages(YamlConfiguration.loadConfiguration(file));
+        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+        try (var stream = plugin.getResource("messages.yml")) {
+            if (stream == null) {
+                throw new IllegalArgumentException("Falta messages.yml dentro del plugin");
+            }
+            try (var reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+                configuration.setDefaults(YamlConfiguration.loadConfiguration(reader));
+                configuration.options().copyDefaults(true);
+                configuration.save(file);
+            }
+        } catch (IOException exception) {
+            plugin.getLogger().warning(
+                    "No se pudieron incorporar los mensajes nuevos: " + exception.getMessage());
+        }
+        return new Messages(configuration);
     }
 
     public Component prefixed(String path) {
@@ -50,4 +67,3 @@ public final class Messages {
         return miniMessage.deserialize(template, TagResolver.resolver(resolvers));
     }
 }
-

@@ -44,11 +44,14 @@ public final class StaffRankRegistry {
                 continue;
             }
             String group = normalize(rank.getString("group", "csdm-" + id));
+            String displayName = rank.getString("display-name", id);
+            String prefix = rank.getString("prefix", "");
             definitions.put(id, new StaffRankDefinition(
                     id,
                     group,
-                    rank.getString("display-name", id),
-                    rank.getString("prefix", ""),
+                    displayName,
+                    prefix,
+                    rank.getString("nametag-label", defaultNametagLabel(prefix, displayName)),
                     rank.getInt("priority", 1),
                     kind,
                     rank.getStringList("inherits"),
@@ -84,5 +87,11 @@ public final class StaffRankRegistry {
 
     private static String normalize(String value) {
         return value.trim().toLowerCase(Locale.ROOT).replace('_', '-');
+    }
+
+    private static String defaultNametagLabel(String prefix, String displayName) {
+        String withoutSeparator = prefix.replaceFirst(
+                "(?i)\\s*<dark_gray>\\s*•\\s*</dark_gray>\\s*$", "").trim();
+        return withoutSeparator.isEmpty() ? displayName : withoutSeparator;
     }
 }

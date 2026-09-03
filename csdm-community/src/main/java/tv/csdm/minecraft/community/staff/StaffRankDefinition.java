@@ -7,6 +7,7 @@ public record StaffRankDefinition(
         String group,
         String displayName,
         String prefix,
+        String nametagLabel,
         int priority,
         RankKind kind,
         List<String> inherits,
