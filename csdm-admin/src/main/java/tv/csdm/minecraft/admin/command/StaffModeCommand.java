@@ -37,6 +37,11 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
         switch (args[0].toLowerCase()) {
             case "on", "activar" -> staffMode.enable(player);
             case "off", "desactivar" -> staffMode.disable(player);
+            case "aleatorio", "random" -> {
+                if (requireActive(player)) {
+                    staffMode.teleportRandom(player);
+                }
+            }
             case "vanish", "ocultar" -> {
                 if (!requireActive(player)) {
                     return true;
@@ -107,13 +112,14 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(Component.text("Staff Mode CSDM", NamedTextColor.AQUA));
         player.sendMessage(Component.text("/staff o /sm — activar/desactivar", NamedTextColor.GRAY));
         player.sendMessage(Component.text("/staff tp|congelar|inspeccionar <jugador>", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("/staff aleatorio — visitar un jugador de este mundo", NamedTextColor.GRAY));
         player.sendMessage(Component.text("/sancionar <jugador> <advertir|expulsar|suspender|bloquear|perdonar>", NamedTextColor.GRAY));
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return filter(List.of("activar", "desactivar", "vanish", "tp", "congelar", "inspeccionar", "ayuda"), args[0]);
+            return filter(List.of("activar", "desactivar", "vanish", "tp", "aleatorio", "congelar", "inspeccionar", "ayuda"), args[0]);
         }
         if (args.length == 2 && List.of("tp", "teleportar", "freeze", "congelar", "inspect", "inspeccionar")
                 .contains(args[0].toLowerCase())) {

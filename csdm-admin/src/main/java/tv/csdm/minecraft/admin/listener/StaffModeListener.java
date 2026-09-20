@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tv.csdm.minecraft.admin.staff.StaffModeService;
+import tv.csdm.minecraft.admin.staff.StaffInspection;
 
 public final class StaffModeListener implements Listener {
     private final StaffModeService staffMode;
@@ -70,6 +71,7 @@ public final class StaffModeListener implements Listener {
         switch (action) {
             case StaffModeService.VANISH -> staffMode.toggleVanish(player);
             case StaffModeService.EXIT -> staffMode.disable(player);
+            case StaffModeService.RANDOM_TELEPORT -> staffMode.teleportRandom(player);
             case StaffModeService.TELEPORT -> showTargets(player, "tp", false);
             case StaffModeService.FREEZE -> showTargets(player, "congelar", false);
             case StaffModeService.INSPECT -> showTargets(player, "inspeccionar", false);
@@ -111,6 +113,10 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof StaffInspection) {
+            event.setCancelled(true);
+            return;
+        }
         if (event.getWhoClicked() instanceof Player player && staffMode.isActive(player)) {
             event.setCancelled(true);
         }
@@ -118,6 +124,10 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof StaffInspection) {
+            event.setCancelled(true);
+            return;
+        }
         if (event.getWhoClicked() instanceof Player player && staffMode.isActive(player)) {
             event.setCancelled(true);
         }

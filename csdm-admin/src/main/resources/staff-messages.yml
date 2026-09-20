@@ -63,3 +63,18 @@ unfreeze-confirmed:
     - '<aqua><player> fue liberado.</aqua>'
   title:
     enabled: false
+random-empty:
+  chat:
+    - '<yellow>No hay otros jugadores disponibles en este mundo.</yellow>'
+  title:
+    enabled: false
+random-arrived:
+  chat:
+    - '<aqua>Te has teletransportado a <player>.</aqua>'
+  title:
+    enabled: false
+random-failed:
+  chat:
+    - '<red>No se pudo completar el teletransporte a <player>.</red>'
+  title:
+    enabled: false

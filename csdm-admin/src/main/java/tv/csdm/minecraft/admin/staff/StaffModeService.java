@@ -1,14 +1,17 @@
 package tv.csdm.minecraft.admin.staff;
 
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Bukkit;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +26,7 @@ public final class StaffModeService {
     public static final String INSPECT = "inspect";
     public static final String SANCTION = "sanction";
     public static final String EXIT = "exit";
+    public static final String RANDOM_TELEPORT = "random_teleport";
 
     private final JavaPlugin plugin;
     private StaffMessages messages;
@@ -99,6 +103,9 @@ public final class StaffModeService {
         }
         visible.remove(player.getUniqueId());
         frozen.remove(player.getUniqueId());
+        if (player.getOpenInventory().getTopInventory().getHolder() instanceof StaffInspection) {
+            player.closeInventory();
+        }
         restoreStored(player);
         showToEveryone(player);
         messages.send(player, "disabled", player.getName());
@@ -158,10 +165,7 @@ public final class StaffModeService {
         if (!isActive(viewer)) {
             return;
         }
-        Inventory inventory = Bukkit.createInventory(
-                null,
-                54,
-                Component.text("Inventario de " + target.getName(), NamedTextColor.DARK_AQUA));
+        Inventory inventory = new StaffInspection(target.getName()).getInventory();
         ItemStack[] storage = target.getInventory().getStorageContents();
         for (int slot = 0; slot < storage.length && slot < 36; slot++) {
             inventory.setItem(slot, cloneItem(storage[slot]));
@@ -171,7 +175,59 @@ public final class StaffModeService {
             inventory.setItem(45 + slot, cloneItem(armor[slot]));
         }
         inventory.setItem(49, cloneItem(target.getInventory().getItemInOffHand()));
+        inventory.setItem(50, cloneItem(target.getInventory().getItemInMainHand()));
+        inventory.setItem(51, information(Material.EXPERIENCE_BOTTLE, "Estado del jugador", List.of(
+                Component.text("Nivel de experiencia: " + target.getLevel()),
+                Component.text("Vida: " + Math.round(target.getHealth()) + " • Comida: " + target.getFoodLevel()),
+                Component.text("Ping: " + target.getPing() + " ms"),
+                Component.text("Tiempo jugado: " + playTime(target.getStatistic(Statistic.PLAY_ONE_MINUTE))),
+                Component.text("Vista al abrir; vuelve a abrir para actualizar"))));
+        List<Component> effects = new ArrayList<>();
+        target.getActivePotionEffects().forEach(effect -> effects.add(
+                Component.translatable(effect.getType().translationKey())
+                        .append(Component.text(" " + (effect.getAmplifier() + 1) + " • "
+                                + (effect.isInfinite() ? "sin límite" : effect.getDuration() / 20 + " s")))));
+        if (effects.isEmpty()) {
+            effects.add(Component.text("Sin efectos activos"));
+        }
+        inventory.setItem(52, information(Material.POTION, "Efectos activos", effects));
         viewer.openInventory(inventory);
+    }
+
+    public void teleportRandom(Player staff) {
+        if (!isActive(staff) || !staff.hasPermission("csdm.staffmode.use")) {
+            return;
+        }
+        List<Player> candidates = plugin.getServer().getOnlinePlayers().stream()
+                .filter(target -> !target.equals(staff) && target.isOnline())
+                .filter(target -> !isActive(target) && staff.canSee(target))
+                .filter(target -> target.getWorld().equals(staff.getWorld()))
+                .toList();
+        if (candidates.isEmpty()) {
+            messages.send(staff, "random-empty", staff.getName());
+            return;
+        }
+        Player target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+        // The destination is already loaded because a player is there.
+        if (staff.teleport(target.getLocation())) {
+            messages.send(staff, "random-arrived", target.getName());
+        } else {
+            messages.send(staff, "random-failed", target.getName());
+        }
+    }
+
+    static String playTime(int ticks) {
+        long minutes = Math.max(0L, ticks) / 1200;
+        return minutes / 60 + " h " + minutes % 60 + " min";
+    }
+
+    private ItemStack information(Material material, String name, List<Component> lines) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text(name, NamedTextColor.AQUA));
+        meta.lore(lines);
+        item.setItemMeta(meta);
+        return item;
     }
 
     private StaffSnapshot capture(Player player) {
@@ -216,6 +272,7 @@ public final class StaffModeService {
         player.getInventory().setItem(2, tool(Material.BLUE_ICE, "Congelar", FREEZE));
         player.getInventory().setItem(3, tool(Material.CHEST, "Inspeccionar inventario", INSPECT));
         player.getInventory().setItem(4, tool(Material.IRON_AXE, "Sancionar", SANCTION));
+        player.getInventory().setItem(5, tool(Material.BLAZE_ROD, "Jugador aleatorio", RANDOM_TELEPORT));
         player.getInventory().setItem(8, tool(Material.RED_DYE, "Salir de Staff Mode", EXIT));
     }
 

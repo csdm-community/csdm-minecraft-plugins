@@ -65,3 +65,10 @@ cambiar cada lista `chat`, título, subtítulo y los tiempos en milisegundos.
 `chat: []` silencia el chat de ese aviso y `title.enabled: false` oculta su título.
 Las claves nuevas se incorporan al archivo sin sustituir tus personalizaciones.
 Recargar los textos conserva las sesiones de Staff Mode, vanish e inventarios.
+
+La vara de blaze (sexto espacio) y `/staff aleatorio` llevan a un jugador visible
+del mismo mundo; se excluyen el propio moderador y quienes estén en Staff Mode.
+La inspección añade la mano principal, efectos, nivel de experiencia, vida, hambre,
+ping y tiempo jugado. Es una captura al abrir, de solo lectura: vuelve a abrirla
+para actualizar los datos. Al salir de Staff Mode se cierra la inspección; sus
+copias de objetos siguen protegidas aunque cambie el estado del moderador.

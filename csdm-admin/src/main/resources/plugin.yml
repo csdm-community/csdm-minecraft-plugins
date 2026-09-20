@@ -13,7 +13,7 @@ commands:
   staff:
     description: Activa o desactiva el Staff Mode de CSDM
     aliases: [sm]
-    usage: /staff [activar|desactivar|vanish|tp|congelar|inspeccionar]
+    usage: /staff [activar|desactivar|vanish|tp|aleatorio|congelar|inspeccionar]
     permission: csdm.staffmode.use
   fly:
     description: Activa o desactiva el vuelo autorizado
