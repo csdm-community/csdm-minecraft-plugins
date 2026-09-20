@@ -51,3 +51,17 @@ La telemetría bStats se instala desactivada mediante
 - El secreto interno de `CSDMVerify` se lee preferentemente desde `CSDM_INTERNAL_SECRET`.
 - Ningún plugin contiene ni debe recibir una clave `service_role` de Supabase.
 - Los permisos administrativos pertenecen a LuckPerms; los componentes visuales nunca conceden permisos.
+
+## Avisos de Staff Mode
+
+`/sm` muestra títulos al activar y desactivar el modo. Vanish, congelación y
+liberación también tienen avisos en español. El jugador congelado recibe el mismo
+aviso al usar `/staff congelar <jugador>` o la herramienta de hielo. Una interacción
+con la mano secundaria no repite la acción. No se añaden sanciones automáticas.
+
+Edita `plugins/CSDMAdmin/staff-messages.yml` y ejecuta `/csdmadmin recargar`.
+Los mensajes admiten MiniMessage y `<player>` para el nombre del jugador; puedes
+cambiar cada lista `chat`, título, subtítulo y los tiempos en milisegundos.
+`chat: []` silencia el chat de ese aviso y `title.enabled: false` oculta su título.
+Las claves nuevas se incorporan al archivo sin sustituir tus personalizaciones.
+Recargar los textos conserva las sesiones de Staff Mode, vanish e inventarios.

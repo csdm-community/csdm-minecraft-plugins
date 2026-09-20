@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -55,6 +56,9 @@ public final class StaffModeListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onToolUse(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
         if (!staffMode.isActive(player)) {
             return;
         }
@@ -64,12 +68,7 @@ public final class StaffModeListener implements Listener {
         }
         event.setCancelled(true);
         switch (action) {
-            case StaffModeService.VANISH -> {
-                boolean vanished = staffMode.toggleVanish(player);
-                player.sendMessage(Component.text(
-                        vanished ? "Vanish activado." : "Vanish desactivado.",
-                        vanished ? NamedTextColor.AQUA : NamedTextColor.YELLOW));
-            }
+            case StaffModeService.VANISH -> staffMode.toggleVanish(player);
             case StaffModeService.EXIT -> staffMode.disable(player);
             case StaffModeService.TELEPORT -> showTargets(player, "tp", false);
             case StaffModeService.FREEZE -> showTargets(player, "congelar", false);
@@ -82,6 +81,9 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerToolUse(PlayerInteractEntityEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
         Player staff = event.getPlayer();
         Entity clicked = event.getRightClicked();
         if (!staffMode.isActive(staff) || !(clicked instanceof Player target)) {
@@ -96,9 +98,7 @@ public final class StaffModeListener implements Listener {
             case StaffModeService.TELEPORT -> staff.teleportAsync(target.getLocation());
             case StaffModeService.FREEZE -> {
                 boolean frozen = staffMode.toggleFreeze(target);
-                staff.sendMessage(Component.text(
-                        target.getName() + (frozen ? " quedó congelado." : " fue liberado."),
-                        NamedTextColor.AQUA));
+                staffMode.notifyFreezeResult(staff, target, frozen);
             }
             case StaffModeService.INSPECT -> staffMode.openInspection(staff, target);
             case StaffModeService.SANCTION -> staff.sendMessage(Component.text(

@@ -81,6 +81,9 @@ public final class CSDMAdminPlugin extends JavaPlugin {
 
     public void reloadServices() {
         reloadConfig();
+        if (staffModeService != null) {
+            staffModeService.reloadMessages();
+        }
         settings = AdminSettings.load(getConfig());
         if (worldPolicyService != null) {
             worldPolicyService.stopEnforcementTask();

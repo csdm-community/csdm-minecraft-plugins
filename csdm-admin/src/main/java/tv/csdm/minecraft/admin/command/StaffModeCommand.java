@@ -41,10 +41,7 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
                 if (!requireActive(player)) {
                     return true;
                 }
-                boolean vanished = staffMode.toggleVanish(player);
-                player.sendMessage(Component.text(
-                        vanished ? "Ahora eres invisible para los usuarios." : "Ahora eres visible para todos.",
-                        vanished ? NamedTextColor.AQUA : NamedTextColor.YELLOW));
+                staffMode.toggleVanish(player);
             }
             case "tp", "teleportar" -> withTarget(player, args, target -> {
                 player.teleportAsync(target.getLocation());
@@ -52,12 +49,7 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
             });
             case "freeze", "congelar" -> withTarget(player, args, target -> {
                 boolean frozen = staffMode.toggleFreeze(target);
-                target.sendMessage(Component.text(
-                        frozen ? "Has sido congelado por el equipo de moderación." : "Ya puedes moverte de nuevo.",
-                        frozen ? NamedTextColor.RED : NamedTextColor.GREEN));
-                player.sendMessage(Component.text(
-                        target.getName() + (frozen ? " quedó congelado." : " fue liberado."),
-                        NamedTextColor.AQUA));
+                staffMode.notifyFreezeResult(player, target, frozen);
             });
             case "inspect", "inspeccionar" -> withTarget(player, args, target -> staffMode.openInspection(player, target));
             case "ayuda", "help" -> help(player);

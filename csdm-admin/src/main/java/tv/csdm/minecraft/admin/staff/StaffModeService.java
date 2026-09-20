@@ -25,6 +25,7 @@ public final class StaffModeService {
     public static final String EXIT = "exit";
 
     private final JavaPlugin plugin;
+    private StaffMessages messages;
     private final StaffSnapshotStore snapshots;
     private final NamespacedKey actionKey;
     private final Set<UUID> active = new HashSet<>();
@@ -33,6 +34,7 @@ public final class StaffModeService {
 
     public StaffModeService(JavaPlugin plugin) {
         this.plugin = plugin;
+        this.messages = StaffMessages.load(plugin);
         this.snapshots = new StaffSnapshotStore(plugin);
         this.actionKey = new NamespacedKey(plugin, "staff_action");
     }
@@ -45,12 +47,22 @@ public final class StaffModeService {
         return frozen.contains(player.getUniqueId());
     }
 
+    public void reloadMessages() {
+        messages = StaffMessages.load(plugin);
+    }
+
     public boolean toggleFreeze(Player target) {
         if (!frozen.add(target.getUniqueId())) {
             frozen.remove(target.getUniqueId());
+            messages.send(target, "unfrozen", target.getName());
             return false;
         }
+        messages.send(target, "frozen", target.getName());
         return true;
+    }
+
+    public void notifyFreezeResult(Player staff, Player target, boolean frozen) {
+        messages.send(staff, frozen ? "freeze-confirmed" : "unfreeze-confirmed", target.getName());
     }
 
     public void clearFreeze(Player target) {
@@ -77,7 +89,7 @@ public final class StaffModeService {
         player.setCanPickupItems(false);
         installTools(player);
         applyVisibility(player);
-        player.sendMessage(Component.text("Staff Mode activado.", NamedTextColor.AQUA));
+        messages.send(player, "enabled", player.getName());
         return true;
     }
 
@@ -89,7 +101,7 @@ public final class StaffModeService {
         frozen.remove(player.getUniqueId());
         restoreStored(player);
         showToEveryone(player);
-        player.sendMessage(Component.text("Staff Mode desactivado y estado restaurado.", NamedTextColor.GREEN));
+        messages.send(player, "disabled", player.getName());
         return true;
     }
 
@@ -119,7 +131,9 @@ public final class StaffModeService {
             visible.remove(player.getUniqueId());
         }
         applyVisibility(player);
-        return !visible.contains(player.getUniqueId());
+        boolean vanished = !visible.contains(player.getUniqueId());
+        messages.send(player, vanished ? "vanished" : "visible", player.getName());
+        return vanished;
     }
 
     public void hideActiveStaffFrom(Player viewer) {

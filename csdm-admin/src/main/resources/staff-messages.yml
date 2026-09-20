@@ -1,0 +1,65 @@
+# Textos de CSDMAdmin: MiniMessage. <player> inserta el nombre como texto seguro.
+# Edita este archivo y ejecuta /csdmadmin recargar; no hace falta reiniciar.
+# chat: [] silencia el chat de un aviso. title.enabled: false oculta su título.
+timing:
+  fade-in-ms: 200
+  stay-ms: 2500
+  fade-out-ms: 400
+
+enabled:
+  chat:
+    - '<aqua>Staff Mode activado.</aqua>'
+  title:
+    enabled: true
+    text: '<aqua><bold>STAFF MODE</bold></aqua>'
+    subtitle: '<green>Activado</green> <dark_gray>•</dark_gray> <gray>Herramientas de moderación listas</gray>'
+disabled:
+  chat:
+    - '<green>Staff Mode desactivado. Tu estado anterior se ha restaurado.</green>'
+  title:
+    enabled: true
+    text: '<aqua><bold>STAFF MODE</bold></aqua>'
+    subtitle: '<red>Desactivado</red> <dark_gray>•</dark_gray> <gray>Inventario restaurado</gray>'
+vanished:
+  chat:
+    - '<aqua>Ahora eres invisible para los usuarios.</aqua>'
+  title:
+    enabled: true
+    text: '<aqua><bold>VANISH</bold></aqua>'
+    subtitle: '<gray>Oculto para los usuarios</gray>'
+visible:
+  chat:
+    - '<yellow>Ahora eres visible para todos.</yellow>'
+  title:
+    enabled: true
+    text: '<aqua><bold>VANISH</bold></aqua>'
+    subtitle: '<yellow>Visible para todos</yellow>'
+frozen:
+  chat:
+    - '<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>'
+    - '<red><bold>⚠ REVISIÓN DE MODERACIÓN</bold></red>'
+    - '<white><player>, un miembro del staff ha detenido tu movimiento.</white>'
+    - '<gray>Permanece conectado y sigue las indicaciones del staff por el chat.</gray>'
+    - '<gray>Si necesitas ayuda, contacta al equipo en el Discord de CSDM.</gray>'
+    - '<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>'
+  title:
+    enabled: true
+    text: '<red><bold>EN REVISIÓN</bold></red>'
+    subtitle: '<white>Lee el aviso del chat y espera al staff</white>'
+unfrozen:
+  chat:
+    - '<green>El staff ha liberado tu movimiento. Ya puedes moverte de nuevo.</green>'
+  title:
+    enabled: true
+    text: '<green><bold>MOVIMIENTO RESTAURADO</bold></green>'
+    subtitle: '<gray>Ya puedes continuar</gray>'
+freeze-confirmed:
+  chat:
+    - '<aqua><player> quedó congelado.</aqua>'
+  title:
+    enabled: false
+unfreeze-confirmed:
+  chat:
+    - '<aqua><player> fue liberado.</aqua>'
+  title:
+    enabled: false
