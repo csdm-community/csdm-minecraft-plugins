@@ -198,7 +198,7 @@ public final class StaffModeService {
         if (!isActive(staff) || !staff.hasPermission("csdm.staffmode.use")) {
             return;
         }
-        List<Player> candidates = plugin.getServer().getOnlinePlayers().stream()
+        List<? extends Player> candidates = plugin.getServer().getOnlinePlayers().stream()
                 .filter(target -> !target.equals(staff) && target.isOnline())
                 .filter(target -> !isActive(target) && staff.canSee(target))
                 .filter(target -> target.getWorld().equals(staff.getWorld()))
