@@ -72,3 +72,27 @@ La inspección añade la mano principal, efectos, nivel de experiencia, vida, ha
 ping y tiempo jugado. Es una captura al abrir, de solo lectura: vuelve a abrirla
 para actualizar los datos. Al salir de Staff Mode se cierra la inspección; sus
 copias de objetos siguen protegidas aunque cambie el estado del moderador.
+
+## Brújula de Staff Mode
+
+La brújula y `/staff tp` abren un cofre doble (54 espacios) con las cabezas de
+los jugadores conectados y visibles para quien lo abre. El propio moderador no
+aparece. Haz clic en una cabeza para teletransportarte.
+
+- Filas 1–2: jugadores con `csdm.staffmode.use` o `csdm.staffmode.priority`.
+- Fila 3: separador.
+- Filas 4–5: los demás jugadores.
+- Fila 6: página anterior/siguiente, recuentos, actualizar y cerrar.
+
+Ambos grupos se ordenan por nombre y tienen paginación independiente de 18
+jugadores por página, controlada con los mismos botones. El permiso de prioridad
+solo cambia la ubicación en el menú; no concede herramientas de moderación:
+
+```text
+/lp user NOMBRE permission set csdm.staffmode.priority true
+```
+
+La lista se reconstruye al actualizar o cambiar de página. Antes de teletransportar
+se comprueban de nuevo los permisos del moderador, la sesión del menú y que el
+destino siga conectado y visible. El menú es de solo lectura y se cierra al salir
+de Staff Mode. `/staff tp Nombre` conserva el teletransporte directo.

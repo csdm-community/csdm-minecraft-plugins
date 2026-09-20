@@ -78,3 +78,18 @@ random-failed:
     - '<red>No se pudo completar el teletransporte a <player>.</red>'
   title:
     enabled: false
+teleport-unavailable:
+  chat:
+    - '<yellow>Ese jugador ya no está disponible. Lista actualizada.</yellow>'
+  title:
+    enabled: false
+teleport-arrived:
+  chat:
+    - '<aqua>Te has teletransportado a <player>.</aqua>'
+  title:
+    enabled: false
+teleport-failed:
+  chat:
+    - '<red>No se pudo completar el teletransporte a <player>.</red>'
+  title:
+    enabled: false

@@ -42,6 +42,9 @@ permissions:
   csdm.staffmode.see:
     description: Permite ver integrantes ocultos en Staff Mode
     default: op
+  csdm.staffmode.priority:
+    description: Muestra al jugador en las filas superiores de la brújula; no concede herramientas de staff
+    default: false
   csdm.command.fly:
     description: Permite utilizar /fly
     default: op

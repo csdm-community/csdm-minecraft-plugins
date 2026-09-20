@@ -103,7 +103,8 @@ public final class StaffModeService {
         }
         visible.remove(player.getUniqueId());
         frozen.remove(player.getUniqueId());
-        if (player.getOpenInventory().getTopInventory().getHolder() instanceof StaffInspection) {
+        if (player.getOpenInventory().getTopInventory().getHolder() instanceof StaffInspection
+                || player.getOpenInventory().getTopInventory().getHolder() instanceof StaffTeleportMenu) {
             player.closeInventory();
         }
         restoreStored(player);
@@ -192,6 +193,50 @@ public final class StaffModeService {
         }
         inventory.setItem(52, information(Material.POTION, "Efectos activos", effects));
         viewer.openInventory(inventory);
+    }
+
+    public void openTeleportMenu(Player viewer, int page) {
+        if (!isActive(viewer) || !viewer.hasPermission("csdm.staffmode.use")) {
+            return;
+        }
+        viewer.openInventory(new StaffTeleportMenu(viewer, plugin.getServer().getOnlinePlayers(), page).getInventory());
+    }
+
+    public void clickTeleportMenu(Player viewer, StaffTeleportMenu menu, int slot) {
+        if (!menu.belongsTo(viewer) || !isActive(viewer) || !viewer.hasPermission("csdm.staffmode.use")) {
+            return;
+        }
+        // Inventory changes and teleports must run outside InventoryClickEvent.
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!viewer.isOnline() || !isActive(viewer) || !viewer.hasPermission("csdm.staffmode.use")
+                    || viewer.getOpenInventory().getTopInventory().getHolder() != menu) {
+                return;
+            }
+            switch (slot) {
+                case StaffTeleportMenu.CLOSE -> viewer.closeInventory();
+                case StaffTeleportMenu.REFRESH -> openTeleportMenu(viewer, menu.page());
+                case StaffTeleportMenu.PREVIOUS -> {
+                    if (menu.page() > 0) openTeleportMenu(viewer, menu.page() - 1);
+                }
+                case StaffTeleportMenu.NEXT -> {
+                    if (menu.page() + 1 < menu.pages()) openTeleportMenu(viewer, menu.page() + 1);
+                }
+                default -> {
+                    UUID targetId = menu.targetAt(slot);
+                    if (targetId == null) return;
+                    Player target = plugin.getServer().getPlayer(targetId);
+                    if (target == null || !target.isOnline() || !viewer.canSee(target) || target.equals(viewer)) {
+                        messages.send(viewer, "teleport-unavailable", viewer.getName());
+                        openTeleportMenu(viewer, menu.page());
+                        return;
+                    }
+                    viewer.closeInventory();
+                    // An online player's destination is already loaded.
+                    boolean arrived = viewer.teleport(target.getLocation());
+                    messages.send(viewer, arrived ? "teleport-arrived" : "teleport-failed", target.getName());
+                }
+            }
+        });
     }
 
     public void teleportRandom(Player staff) {

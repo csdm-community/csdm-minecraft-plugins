@@ -76,6 +76,10 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
             return;
         }
         if (args.length < 2) {
+            if (args[0].equalsIgnoreCase("tp") || args[0].equalsIgnoreCase("teleportar")) {
+                staffMode.openTeleportMenu(player, 0);
+                return;
+            }
             showTargets(player, args[0]);
             return;
         }
