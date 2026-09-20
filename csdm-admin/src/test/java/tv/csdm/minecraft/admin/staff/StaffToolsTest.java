@@ -46,6 +46,7 @@ class StaffToolsTest {
     void randomTeleportExcludesSelfHiddenPlayersAndOtherWorlds() {
         JavaPlugin plugin = mock(JavaPlugin.class);
         when(plugin.getName()).thenReturn("CSDMAdmin");
+        when(plugin.namespace()).thenReturn("csdmadmin");
         when(plugin.getDataFolder()).thenReturn(directory.toFile());
         when(plugin.getLogger()).thenReturn(Logger.getAnonymousLogger());
         when(plugin.getResource("staff-messages.yml"))
