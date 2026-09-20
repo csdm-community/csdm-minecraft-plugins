@@ -23,6 +23,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import tv.csdm.minecraft.admin.staff.StaffModeService;
 import tv.csdm.minecraft.admin.staff.StaffInspection;
 import tv.csdm.minecraft.admin.staff.StaffTeleportMenu;
+import tv.csdm.minecraft.admin.staff.StaffSanctionMenu;
 
 public final class StaffModeListener implements Listener {
     private final StaffModeService staffMode;
@@ -75,6 +76,7 @@ public final class StaffModeListener implements Listener {
             case StaffModeService.EXIT -> staffMode.disable(player);
             case StaffModeService.RANDOM_TELEPORT -> staffMode.teleportRandom(player);
             case StaffModeService.TELEPORT -> staffMode.openTeleportMenu(player, 0);
+            case StaffModeService.HISTORY -> staffMode.openSanctionHistory(player, null);
             case StaffModeService.FREEZE -> showTargets(player, "congelar", false);
             case StaffModeService.INSPECT -> showTargets(player, "inspeccionar", false);
             case StaffModeService.SANCTION -> showTargets(player, "", true);
@@ -100,6 +102,7 @@ public final class StaffModeListener implements Listener {
         event.setCancelled(true);
         switch (action) {
             case StaffModeService.TELEPORT -> staffMode.openTeleportMenu(staff, 0);
+            case StaffModeService.HISTORY -> staffMode.openSanctionHistory(staff, target.getName());
             case StaffModeService.FREEZE -> {
                 boolean frozen = staffMode.toggleFreeze(target);
                 staffMode.notifyFreezeResult(staff, target, frozen);
@@ -115,6 +118,14 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof StaffSanctionMenu menu) {
+            event.setCancelled(true);
+            if (event.getWhoClicked() instanceof Player player && event.getRawSlot() >= 0 && event.getRawSlot() < 54
+                    && (event.getClick() == ClickType.LEFT || event.getClick() == ClickType.RIGHT)) {
+                staffMode.clickSanctionHistory(player, menu, event.getRawSlot());
+            }
+            return;
+        }
         if (event.getView().getTopInventory().getHolder() instanceof StaffTeleportMenu menu) {
             event.setCancelled(true);
             if (event.getWhoClicked() instanceof Player player && event.getRawSlot() >= 0 && event.getRawSlot() < 54
@@ -134,6 +145,10 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof StaffSanctionMenu) {
+            event.setCancelled(true);
+            return;
+        }
         if (event.getView().getTopInventory().getHolder() instanceof StaffTeleportMenu) {
             event.setCancelled(true);
             return;

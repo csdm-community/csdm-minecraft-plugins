@@ -13,7 +13,7 @@ commands:
   staff:
     description: Activa o desactiva el Staff Mode de CSDM
     aliases: [sm]
-    usage: /staff [activar|desactivar|vanish|tp|aleatorio|congelar|inspeccionar]
+    usage: /staff [activar|desactivar|vanish|tp|aleatorio|sanciones|congelar|inspeccionar]
     permission: csdm.staffmode.use
   fly:
     description: Activa o desactiva el vuelo autorizado
@@ -39,6 +39,8 @@ permissions:
   csdm.staffmode.use:
     description: Permite utilizar /staff y /sm
     default: op
+    children:
+      csdm.sanctions.view: true
   csdm.staffmode.see:
     description: Permite ver integrantes ocultos en Staff Mode
     default: op
@@ -50,6 +52,9 @@ permissions:
     default: op
   csdm.command.fly.others:
     description: Permite cambiar el vuelo de otros jugadores
+    default: op
+  csdm.sanctions.view:
+    description: Permite consultar el historial local de sanciones
     default: op
   csdm.sanctions.warn:
     default: op

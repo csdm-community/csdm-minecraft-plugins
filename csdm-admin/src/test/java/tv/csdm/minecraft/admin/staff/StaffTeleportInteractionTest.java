@@ -75,7 +75,7 @@ class StaffTeleportInteractionTest {
             tasks.add(inv.getArgument(1, Runnable.class));
             return mock(BukkitTask.class);
         }).when(scheduler).runTask(eq(plugin), any(Runnable.class));
-        StaffModeService service = spy(new StaffModeService(plugin));
+        StaffModeService service = spy(new StaffModeService(plugin, mock(tv.csdm.minecraft.admin.moderation.SanctionRepository.class)));
         Player viewer = mock(Player.class);
         when(viewer.getName()).thenReturn("Staff");
         when(viewer.isOnline()).thenReturn(true);

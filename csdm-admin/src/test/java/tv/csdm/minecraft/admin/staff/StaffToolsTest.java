@@ -53,7 +53,7 @@ class StaffToolsTest {
                 .thenAnswer(invocation -> getClass().getResourceAsStream("/staff-messages.yml"));
         Server server = mock(Server.class);
         when(plugin.getServer()).thenReturn(server);
-        StaffModeService service = spy(new StaffModeService(plugin));
+        StaffModeService service = spy(new StaffModeService(plugin, mock(tv.csdm.minecraft.admin.moderation.SanctionRepository.class)));
         World lobby = mock(World.class);
         Player staff = player(lobby);
         doReturn(true).when(service).isActive(staff);

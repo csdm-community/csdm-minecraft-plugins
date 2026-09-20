@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import tv.csdm.minecraft.admin.moderation.SanctionRepository;
 
 public final class StaffModeService {
     public static final String TELEPORT = "teleport";
@@ -26,9 +27,11 @@ public final class StaffModeService {
     public static final String INSPECT = "inspect";
     public static final String SANCTION = "sanction";
     public static final String EXIT = "exit";
+    public static final String HISTORY = "sanction_history";
     public static final String RANDOM_TELEPORT = "random_teleport";
 
     private final JavaPlugin plugin;
+    private final SanctionRepository sanctions;
     private StaffMessages messages;
     private final StaffSnapshotStore snapshots;
     private final NamespacedKey actionKey;
@@ -36,8 +39,9 @@ public final class StaffModeService {
     private final Set<UUID> visible = new HashSet<>();
     private final Set<UUID> frozen = new HashSet<>();
 
-    public StaffModeService(JavaPlugin plugin) {
+    public StaffModeService(JavaPlugin plugin, SanctionRepository sanctions) {
         this.plugin = plugin;
+        this.sanctions = java.util.Objects.requireNonNull(sanctions);
         this.messages = StaffMessages.load(plugin);
         this.snapshots = new StaffSnapshotStore(plugin);
         this.actionKey = new NamespacedKey(plugin, "staff_action");
@@ -104,7 +108,8 @@ public final class StaffModeService {
         visible.remove(player.getUniqueId());
         frozen.remove(player.getUniqueId());
         if (player.getOpenInventory().getTopInventory().getHolder() instanceof StaffInspection
-                || player.getOpenInventory().getTopInventory().getHolder() instanceof StaffTeleportMenu) {
+                || player.getOpenInventory().getTopInventory().getHolder() instanceof StaffTeleportMenu
+                || player.getOpenInventory().getTopInventory().getHolder() instanceof StaffSanctionMenu) {
             player.closeInventory();
         }
         restoreStored(player);
@@ -239,6 +244,57 @@ public final class StaffModeService {
         });
     }
 
+    public void openSanctionHistory(Player viewer, String playerName) {
+        if (!canReadSanctions(viewer)) return;
+        if (playerName == null) {
+            openSanctionHistory(viewer, null, null, false, 0);
+            return;
+        }
+        Player online = plugin.getServer().getPlayerExact(playerName);
+        SanctionRepository.KnownTarget target = online == null ? sanctions.findTarget(playerName)
+                : new SanctionRepository.KnownTarget(online.getUniqueId(), online.getName());
+        if (target == null) {
+            viewer.sendMessage(Component.text("No existe historial local para ese jugador.", NamedTextColor.YELLOW));
+            return;
+        }
+        openSanctionHistory(viewer, target.uuid(), target.name(), false, 0);
+    }
+
+    public void openSanctionHistory(Player viewer, UUID target, String name, boolean activeOnly, int page) {
+        if (!canReadSanctions(viewer)) return;
+        viewer.openInventory(new StaffSanctionMenu(viewer, sanctions.history(), target, name, activeOnly, page)
+                .getInventory());
+    }
+
+    private boolean canReadSanctions(Player viewer) {
+        return isActive(viewer) && viewer.hasPermission("csdm.staffmode.use")
+                && viewer.hasPermission(StaffSanctionMenu.PERMISSION);
+    }
+
+    public void clickSanctionHistory(Player viewer, StaffSanctionMenu menu, int slot) {
+        if (!menu.belongsTo(viewer) || !canReadSanctions(viewer)) return;
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!viewer.isOnline() || !canReadSanctions(viewer)
+                    || viewer.getOpenInventory().getTopInventory().getHolder() != menu) return;
+            switch (slot) {
+                case StaffSanctionMenu.CLOSE -> viewer.closeInventory();
+                case StaffSanctionMenu.ALL_PLAYERS -> openSanctionHistory(viewer, null, null, menu.activeOnly(), 0);
+                case StaffSanctionMenu.FILTER -> openSanctionHistory(viewer, menu.target(), menu.targetName(), !menu.activeOnly(), 0);
+                case StaffSanctionMenu.REFRESH -> openSanctionHistory(viewer, menu.target(), menu.targetName(), menu.activeOnly(), menu.page());
+                case StaffSanctionMenu.PREVIOUS -> {
+                    if (menu.page() > 0) openSanctionHistory(viewer, menu.target(), menu.targetName(), menu.activeOnly(), menu.page() - 1);
+                }
+                case StaffSanctionMenu.NEXT -> {
+                    if (menu.page() + 1 < menu.pages()) openSanctionHistory(viewer, menu.target(), menu.targetName(), menu.activeOnly(), menu.page() + 1);
+                }
+                default -> {
+                    var entry = menu.entryAt(slot);
+                    if (entry != null) openSanctionHistory(viewer, entry.targetUuid(), entry.targetName(), menu.activeOnly(), 0);
+                }
+            }
+        });
+    }
+
     public void teleportRandom(Player staff) {
         if (!isActive(staff) || !staff.hasPermission("csdm.staffmode.use")) {
             return;
@@ -318,6 +374,9 @@ public final class StaffModeService {
         player.getInventory().setItem(3, tool(Material.CHEST, "Inspeccionar inventario", INSPECT));
         player.getInventory().setItem(4, tool(Material.IRON_AXE, "Sancionar", SANCTION));
         player.getInventory().setItem(5, tool(Material.BLAZE_ROD, "Jugador aleatorio", RANDOM_TELEPORT));
+        if (player.hasPermission(StaffSanctionMenu.PERMISSION)) {
+            player.getInventory().setItem(6, tool(Material.BOOK, "Historial de sanciones", HISTORY));
+        }
         player.getInventory().setItem(8, tool(Material.RED_DYE, "Salir de Staff Mode", EXIT));
     }
 

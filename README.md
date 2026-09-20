@@ -96,3 +96,21 @@ La lista se reconstruye al actualizar o cambiar de página. Antes de teletranspo
 se comprueban de nuevo los permisos del moderador, la sesión del menú y que el
 destino siga conectado y visible. El menú es de solo lectura y se cierra al salir
 de Staff Mode. `/staff tp Nombre` conserva el teletransporte directo.
+
+## Libro de sanciones
+
+El séptimo espacio de Staff Mode contiene un libro de **Historial de sanciones**.
+Abre un cofre doble de solo lectura con 45 registros por página, del más reciente
+al más antiguo. Cada registro muestra jugador, tipo, motivo, moderador, fecha UTC,
+vencimiento cuando corresponde, estado e ID. Incluye registros de desconectados.
+
+Haz clic en un registro para filtrar por ese jugador (UUID, incluso si cambió de
+nombre); usa «Ver todos los jugadores» para volver. El embudo alterna todo el
+historial/restricciones activas, y el girasol actualiza los datos. Una suspensión
+vencida aparece como finalizada aunque su marca guardada siga activa. Advertencias,
+expulsiones y perdones se muestran como acciones registradas, no como bloqueos.
+
+También puedes usar `/staff sanciones [jugador]` con Staff Mode activo. El permiso
+`csdm.sanctions.view` se hereda de `csdm.staffmode.use`; se puede denegar expresamente
+con LuckPerms para restringir la consulta. El libro solo consulta `sanctions.yml`
+de CSDMAdmin; no aplica ni retira sanciones y no importa historiales de otros plugins.

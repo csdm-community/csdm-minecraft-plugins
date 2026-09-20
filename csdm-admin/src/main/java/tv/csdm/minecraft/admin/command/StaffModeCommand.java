@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import tv.csdm.minecraft.admin.staff.StaffModeService;
+import tv.csdm.minecraft.admin.staff.StaffSanctionMenu;
 
 public final class StaffModeCommand implements CommandExecutor, TabCompleter {
     private final StaffModeService staffMode;
@@ -40,6 +41,15 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
             case "aleatorio", "random" -> {
                 if (requireActive(player)) {
                     staffMode.teleportRandom(player);
+                }
+            }
+            case "sanciones", "historial" -> {
+                if (requireActive(player)) {
+                    if (!player.hasPermission(StaffSanctionMenu.PERMISSION)) {
+                        player.sendMessage(Component.text("No tienes permiso para consultar sanciones.", NamedTextColor.RED));
+                    } else {
+                        staffMode.openSanctionHistory(player, args.length > 1 ? args[1] : null);
+                    }
                 }
             }
             case "vanish", "ocultar" -> {
@@ -116,6 +126,7 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(Component.text("Staff Mode CSDM", NamedTextColor.AQUA));
         player.sendMessage(Component.text("/staff o /sm — activar/desactivar", NamedTextColor.GRAY));
         player.sendMessage(Component.text("/staff tp|congelar|inspeccionar <jugador>", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("/staff sanciones [jugador] — consultar historial local", NamedTextColor.GRAY));
         player.sendMessage(Component.text("/staff aleatorio — visitar un jugador de este mundo", NamedTextColor.GRAY));
         player.sendMessage(Component.text("/sancionar <jugador> <advertir|expulsar|suspender|bloquear|perdonar>", NamedTextColor.GRAY));
     }
@@ -123,7 +134,7 @@ public final class StaffModeCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return filter(List.of("activar", "desactivar", "vanish", "tp", "aleatorio", "congelar", "inspeccionar", "ayuda"), args[0]);
+            return filter(List.of("activar", "desactivar", "vanish", "tp", "aleatorio", "sanciones", "congelar", "inspeccionar", "ayuda"), args[0]);
         }
         if (args.length == 2 && List.of("tp", "teleportar", "freeze", "congelar", "inspect", "inspeccionar")
                 .contains(args[0].toLowerCase())) {
