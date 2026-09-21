@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Instala mcrcon 0.7.2 y habilita RCON local en el servicio csdm-verify."""
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -66,6 +67,24 @@ def listeners():
     return [line.split()[3] for line in output.splitlines() if line.strip()]
 
 
+def local_rcon_listeners(addresses):
+    if not addresses:
+        return False
+    for endpoint in addresses:
+        try:
+            host, port = endpoint.rsplit(':', 1)
+            if host.startswith('[') and host.endswith(']'):
+                host = host[1:-1]
+            address = ipaddress.ip_address(host)
+            if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped:
+                address = address.ipv4_mapped
+            if port != '25575' or not address.is_loopback:
+                return False
+        except ValueError:
+            return False
+    return True
+
+
 def interrupted(signum, frame):
     raise KeyboardInterrupt('Instalación interrumpida')
 
@@ -128,12 +147,14 @@ def main():
             deadline = time.monotonic() + 120
             while time.monotonic() < deadline:
                 addresses = listeners()
-                if addresses and addresses != ['127.0.0.1:25575']:
-                    raise RuntimeError('RCON no quedó limitado a localhost.')
+                if addresses and not local_rcon_listeners(addresses):
+                    raise RuntimeError('RCON no quedó limitado a localhost. Dirección detectada: '
+                                       + ', '.join(addresses))
                 if addresses:
                     try:
                         result = subprocess.run([str(CONSOLE), 'list'], capture_output=True, text=True, timeout=5)
                         if result.returncode == 0:
+                            print('Dirección local comprobada: ' + ', '.join(addresses), flush=True)
                             print(result.stdout.strip(), flush=True)
                             break
                     except subprocess.TimeoutExpired:
@@ -155,6 +176,7 @@ def main():
                     for path in (CONSOLE, CREDENTIALS, BINARY):
                         path.unlink(missing_ok=True)
                 run('systemctl', 'start', SERVICE)
+                print('Configuración anterior restaurada y arranque solicitado.', flush=True)
             raise
     print(f'LISTO: RCON verificado en 127.0.0.1:25575. Respaldo: {backup}')
     print('Abre la consola con: csdm-consola')
