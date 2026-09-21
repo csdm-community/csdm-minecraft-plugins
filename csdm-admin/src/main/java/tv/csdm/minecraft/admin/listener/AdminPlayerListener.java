@@ -3,8 +3,10 @@ package tv.csdm.minecraft.admin.listener;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import tv.csdm.minecraft.admin.CSDMAdminPlugin;
@@ -17,6 +19,16 @@ public final class AdminPlayerListener implements Listener {
 
     public AdminPlayerListener(CSDMAdminPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onLogin(PlayerLoginEvent event) {
+        // Whitelist rejection happens before PlayerJoinEvent. Change only its text;
+        // never allow access or overwrite a ban, full-server or other rejection.
+        if (plugin.settings().maintenanceEnabled()
+                && event.getResult() == PlayerLoginEvent.Result.KICK_WHITELIST) {
+            event.kickMessage(miniMessage.deserialize(plugin.settings().maintenanceKickMessage()));
+        }
     }
 
     @EventHandler

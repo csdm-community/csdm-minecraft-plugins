@@ -114,3 +114,14 @@ También puedes usar `/staff sanciones [jugador]` con Staff Mode activo. El perm
 `csdm.sanctions.view` se hereda de `csdm.staffmode.use`; se puede denegar expresamente
 con LuckPerms para restringir la consulta. El libro solo consulta `sanctions.yml`
 de CSDMAdmin; no aplica ni retira sanciones y no importa historiales de otros plugins.
+
+## Mensaje de mantenimiento y lista blanca
+
+Con `/csdmadmin mantenimiento on`, los rechazos por lista blanca muestran
+`maintenance.kick-message` de CSDMAdmin, en lugar del texto genérico de Minecraft.
+La comprobación se realiza antes de entrar al mundo. Solo cambia el mensaje: la
+lista blanca sigue rechazando el acceso, incluso si el jugador tiene permiso para
+omitir mantenimiento. Los baneos y otros motivos de rechazo conservan su mensaje;
+las sanciones locales siguen teniendo prioridad. Con mantenimiento desactivado,
+la lista blanca vuelve a usar su mensaje habitual. No se modifica `whitelist.json`
+ni `server.properties`. Activar únicamente la whitelist no activa mantenimiento.
