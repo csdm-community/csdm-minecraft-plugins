@@ -36,7 +36,8 @@ public final class CSDMAdminPlugin extends JavaPlugin {
         command.setExecutor(adminCommand);
         command.setTabCompleter(adminCommand);
 
-        staffModeService = new StaffModeService(this);
+        SanctionRepository sanctionRepository = new SanctionRepository(this);
+        staffModeService = new StaffModeService(this, sanctionRepository);
         StaffModeCommand staffModeCommand = new StaffModeCommand(staffModeService);
         PluginCommand staffCommand = Objects.requireNonNull(getCommand("staff"));
         staffCommand.setExecutor(staffModeCommand);
@@ -48,7 +49,6 @@ public final class CSDMAdminPlugin extends JavaPlugin {
         fly.setTabCompleter(flyCommand);
 
         ModerationSettings moderationSettings = ModerationSettings.load(getConfig());
-        SanctionRepository sanctionRepository = new SanctionRepository(this);
         SanctionService sanctions = new SanctionService(
                 sanctionRepository,
                 new ModerationBridge(this, moderationSettings));
@@ -81,6 +81,9 @@ public final class CSDMAdminPlugin extends JavaPlugin {
 
     public void reloadServices() {
         reloadConfig();
+        if (staffModeService != null) {
+            staffModeService.reloadMessages();
+        }
         settings = AdminSettings.load(getConfig());
         if (worldPolicyService != null) {
             worldPolicyService.stopEnforcementTask();

@@ -1,20 +1,24 @@
 package tv.csdm.minecraft.admin.staff;
 
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Bukkit;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import tv.csdm.minecraft.admin.moderation.SanctionRepository;
 
 public final class StaffModeService {
     public static final String TELEPORT = "teleport";
@@ -23,16 +27,22 @@ public final class StaffModeService {
     public static final String INSPECT = "inspect";
     public static final String SANCTION = "sanction";
     public static final String EXIT = "exit";
+    public static final String HISTORY = "sanction_history";
+    public static final String RANDOM_TELEPORT = "random_teleport";
 
     private final JavaPlugin plugin;
+    private final SanctionRepository sanctions;
+    private StaffMessages messages;
     private final StaffSnapshotStore snapshots;
     private final NamespacedKey actionKey;
     private final Set<UUID> active = new HashSet<>();
     private final Set<UUID> visible = new HashSet<>();
     private final Set<UUID> frozen = new HashSet<>();
 
-    public StaffModeService(JavaPlugin plugin) {
+    public StaffModeService(JavaPlugin plugin, SanctionRepository sanctions) {
         this.plugin = plugin;
+        this.sanctions = java.util.Objects.requireNonNull(sanctions);
+        this.messages = StaffMessages.load(plugin);
         this.snapshots = new StaffSnapshotStore(plugin);
         this.actionKey = new NamespacedKey(plugin, "staff_action");
     }
@@ -45,12 +55,22 @@ public final class StaffModeService {
         return frozen.contains(player.getUniqueId());
     }
 
+    public void reloadMessages() {
+        messages = StaffMessages.load(plugin);
+    }
+
     public boolean toggleFreeze(Player target) {
         if (!frozen.add(target.getUniqueId())) {
             frozen.remove(target.getUniqueId());
+            messages.send(target, "unfrozen", target.getName());
             return false;
         }
+        messages.send(target, "frozen", target.getName());
         return true;
+    }
+
+    public void notifyFreezeResult(Player staff, Player target, boolean frozen) {
+        messages.send(staff, frozen ? "freeze-confirmed" : "unfreeze-confirmed", target.getName());
     }
 
     public void clearFreeze(Player target) {
@@ -77,7 +97,7 @@ public final class StaffModeService {
         player.setCanPickupItems(false);
         installTools(player);
         applyVisibility(player);
-        player.sendMessage(Component.text("Staff Mode activado.", NamedTextColor.AQUA));
+        messages.send(player, "enabled", player.getName());
         return true;
     }
 
@@ -87,9 +107,14 @@ public final class StaffModeService {
         }
         visible.remove(player.getUniqueId());
         frozen.remove(player.getUniqueId());
+        if (player.getOpenInventory().getTopInventory().getHolder() instanceof StaffInspection
+                || player.getOpenInventory().getTopInventory().getHolder() instanceof StaffTeleportMenu
+                || player.getOpenInventory().getTopInventory().getHolder() instanceof StaffSanctionMenu) {
+            player.closeInventory();
+        }
         restoreStored(player);
         showToEveryone(player);
-        player.sendMessage(Component.text("Staff Mode desactivado y estado restaurado.", NamedTextColor.GREEN));
+        messages.send(player, "disabled", player.getName());
         return true;
     }
 
@@ -119,7 +144,9 @@ public final class StaffModeService {
             visible.remove(player.getUniqueId());
         }
         applyVisibility(player);
-        return !visible.contains(player.getUniqueId());
+        boolean vanished = !visible.contains(player.getUniqueId());
+        messages.send(player, vanished ? "vanished" : "visible", player.getName());
+        return vanished;
     }
 
     public void hideActiveStaffFrom(Player viewer) {
@@ -144,10 +171,7 @@ public final class StaffModeService {
         if (!isActive(viewer)) {
             return;
         }
-        Inventory inventory = Bukkit.createInventory(
-                null,
-                54,
-                Component.text("Inventario de " + target.getName(), NamedTextColor.DARK_AQUA));
+        Inventory inventory = new StaffInspection(target.getName()).getInventory();
         ItemStack[] storage = target.getInventory().getStorageContents();
         for (int slot = 0; slot < storage.length && slot < 36; slot++) {
             inventory.setItem(slot, cloneItem(storage[slot]));
@@ -157,7 +181,154 @@ public final class StaffModeService {
             inventory.setItem(45 + slot, cloneItem(armor[slot]));
         }
         inventory.setItem(49, cloneItem(target.getInventory().getItemInOffHand()));
+        inventory.setItem(50, cloneItem(target.getInventory().getItemInMainHand()));
+        inventory.setItem(51, information(Material.EXPERIENCE_BOTTLE, "Estado del jugador", List.of(
+                Component.text("Nivel de experiencia: " + target.getLevel()),
+                Component.text("Vida: " + Math.round(target.getHealth()) + " • Comida: " + target.getFoodLevel()),
+                Component.text("Ping: " + target.getPing() + " ms"),
+                Component.text("Tiempo jugado: " + playTime(target.getStatistic(Statistic.PLAY_ONE_MINUTE))),
+                Component.text("Vista al abrir; vuelve a abrir para actualizar"))));
+        List<Component> effects = new ArrayList<>();
+        target.getActivePotionEffects().forEach(effect -> effects.add(
+                Component.translatable(effect.getType().translationKey())
+                        .append(Component.text(" " + (effect.getAmplifier() + 1) + " • "
+                                + (effect.isInfinite() ? "sin límite" : effect.getDuration() / 20 + " s")))));
+        if (effects.isEmpty()) {
+            effects.add(Component.text("Sin efectos activos"));
+        }
+        inventory.setItem(52, information(Material.POTION, "Efectos activos", effects));
         viewer.openInventory(inventory);
+    }
+
+    public void openTeleportMenu(Player viewer, int page) {
+        if (!isActive(viewer) || !viewer.hasPermission("csdm.staffmode.use")) {
+            return;
+        }
+        viewer.openInventory(new StaffTeleportMenu(viewer, plugin.getServer().getOnlinePlayers(), page).getInventory());
+    }
+
+    public void clickTeleportMenu(Player viewer, StaffTeleportMenu menu, int slot) {
+        if (!menu.belongsTo(viewer) || !isActive(viewer) || !viewer.hasPermission("csdm.staffmode.use")) {
+            return;
+        }
+        // Inventory changes and teleports must run outside InventoryClickEvent.
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!viewer.isOnline() || !isActive(viewer) || !viewer.hasPermission("csdm.staffmode.use")
+                    || viewer.getOpenInventory().getTopInventory().getHolder() != menu) {
+                return;
+            }
+            switch (slot) {
+                case StaffTeleportMenu.CLOSE -> viewer.closeInventory();
+                case StaffTeleportMenu.REFRESH -> openTeleportMenu(viewer, menu.page());
+                case StaffTeleportMenu.PREVIOUS -> {
+                    if (menu.page() > 0) openTeleportMenu(viewer, menu.page() - 1);
+                }
+                case StaffTeleportMenu.NEXT -> {
+                    if (menu.page() + 1 < menu.pages()) openTeleportMenu(viewer, menu.page() + 1);
+                }
+                default -> {
+                    UUID targetId = menu.targetAt(slot);
+                    if (targetId == null) return;
+                    Player target = plugin.getServer().getPlayer(targetId);
+                    if (target == null || !target.isOnline() || !viewer.canSee(target) || target.equals(viewer)) {
+                        messages.send(viewer, "teleport-unavailable", viewer.getName());
+                        openTeleportMenu(viewer, menu.page());
+                        return;
+                    }
+                    viewer.closeInventory();
+                    // An online player's destination is already loaded.
+                    boolean arrived = viewer.teleport(target.getLocation());
+                    messages.send(viewer, arrived ? "teleport-arrived" : "teleport-failed", target.getName());
+                }
+            }
+        });
+    }
+
+    public void openSanctionHistory(Player viewer, String playerName) {
+        if (!canReadSanctions(viewer)) return;
+        if (playerName == null) {
+            openSanctionHistory(viewer, null, null, false, 0);
+            return;
+        }
+        Player online = plugin.getServer().getPlayerExact(playerName);
+        SanctionRepository.KnownTarget target = online == null ? sanctions.findTarget(playerName)
+                : new SanctionRepository.KnownTarget(online.getUniqueId(), online.getName());
+        if (target == null) {
+            viewer.sendMessage(Component.text("No existe historial local para ese jugador.", NamedTextColor.YELLOW));
+            return;
+        }
+        openSanctionHistory(viewer, target.uuid(), target.name(), false, 0);
+    }
+
+    public void openSanctionHistory(Player viewer, UUID target, String name, boolean activeOnly, int page) {
+        if (!canReadSanctions(viewer)) return;
+        viewer.openInventory(new StaffSanctionMenu(viewer, sanctions.history(), target, name, activeOnly, page)
+                .getInventory());
+    }
+
+    private boolean canReadSanctions(Player viewer) {
+        return isActive(viewer) && viewer.hasPermission("csdm.staffmode.use")
+                && viewer.hasPermission(StaffSanctionMenu.PERMISSION);
+    }
+
+    public void clickSanctionHistory(Player viewer, StaffSanctionMenu menu, int slot) {
+        if (!menu.belongsTo(viewer) || !canReadSanctions(viewer)) return;
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!viewer.isOnline() || !canReadSanctions(viewer)
+                    || viewer.getOpenInventory().getTopInventory().getHolder() != menu) return;
+            switch (slot) {
+                case StaffSanctionMenu.CLOSE -> viewer.closeInventory();
+                case StaffSanctionMenu.ALL_PLAYERS -> openSanctionHistory(viewer, null, null, menu.activeOnly(), 0);
+                case StaffSanctionMenu.FILTER -> openSanctionHistory(viewer, menu.target(), menu.targetName(), !menu.activeOnly(), 0);
+                case StaffSanctionMenu.REFRESH -> openSanctionHistory(viewer, menu.target(), menu.targetName(), menu.activeOnly(), menu.page());
+                case StaffSanctionMenu.PREVIOUS -> {
+                    if (menu.page() > 0) openSanctionHistory(viewer, menu.target(), menu.targetName(), menu.activeOnly(), menu.page() - 1);
+                }
+                case StaffSanctionMenu.NEXT -> {
+                    if (menu.page() + 1 < menu.pages()) openSanctionHistory(viewer, menu.target(), menu.targetName(), menu.activeOnly(), menu.page() + 1);
+                }
+                default -> {
+                    var entry = menu.entryAt(slot);
+                    if (entry != null) openSanctionHistory(viewer, entry.targetUuid(), entry.targetName(), menu.activeOnly(), 0);
+                }
+            }
+        });
+    }
+
+    public void teleportRandom(Player staff) {
+        if (!isActive(staff) || !staff.hasPermission("csdm.staffmode.use")) {
+            return;
+        }
+        List<? extends Player> candidates = plugin.getServer().getOnlinePlayers().stream()
+                .filter(target -> !target.equals(staff) && target.isOnline())
+                .filter(target -> !isActive(target) && staff.canSee(target))
+                .filter(target -> target.getWorld().equals(staff.getWorld()))
+                .toList();
+        if (candidates.isEmpty()) {
+            messages.send(staff, "random-empty", staff.getName());
+            return;
+        }
+        Player target = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+        // The destination is already loaded because a player is there.
+        if (staff.teleport(target.getLocation())) {
+            messages.send(staff, "random-arrived", target.getName());
+        } else {
+            messages.send(staff, "random-failed", target.getName());
+        }
+    }
+
+    static String playTime(int ticks) {
+        long minutes = Math.max(0L, ticks) / 1200;
+        return minutes / 60 + " h " + minutes % 60 + " min";
+    }
+
+    private ItemStack information(Material material, String name, List<Component> lines) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text(name, NamedTextColor.AQUA));
+        meta.lore(lines);
+        item.setItemMeta(meta);
+        return item;
     }
 
     private StaffSnapshot capture(Player player) {
@@ -202,6 +373,10 @@ public final class StaffModeService {
         player.getInventory().setItem(2, tool(Material.BLUE_ICE, "Congelar", FREEZE));
         player.getInventory().setItem(3, tool(Material.CHEST, "Inspeccionar inventario", INSPECT));
         player.getInventory().setItem(4, tool(Material.IRON_AXE, "Sancionar", SANCTION));
+        player.getInventory().setItem(5, tool(Material.BLAZE_ROD, "Jugador aleatorio", RANDOM_TELEPORT));
+        if (player.hasPermission(StaffSanctionMenu.PERMISSION)) {
+            player.getInventory().setItem(6, tool(Material.BOOK, "Historial de sanciones", HISTORY));
+        }
         player.getInventory().setItem(8, tool(Material.RED_DYE, "Salir de Staff Mode", EXIT));
     }
 
