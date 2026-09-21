@@ -46,20 +46,35 @@ public final class AdminPlayerListener implements Listener {
         player.setAllowFlight(plugin.settings().allowFlight());
         if (plugin.settings().teleportToSpawnOnJoin()) {
             plugin.getServer().getScheduler().runTask(plugin, () ->
-                    plugin.worldPolicyService().configuredSpawn().ifPresent(player::teleportAsync));
+                    {
+                        if (player.isOnline() && isLobby(player.getWorld())) {
+                            plugin.worldPolicyService().configuredSpawn().ifPresent(player::teleportAsync);
+                        }
+                    });
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        if (event.getTo().getY() >= plugin.settings().rescueBelowY()) {
+        if (event.getTo() == null || !isLobby(event.getTo().getWorld())
+                || event.getTo().getY() >= plugin.settings().rescueBelowY()) {
             return;
         }
-        plugin.worldPolicyService().configuredSpawn().ifPresent(spawn -> event.getPlayer().teleportAsync(spawn));
+        plugin.worldPolicyService().configuredSpawn().ifPresent(spawn -> {
+            event.getPlayer().setFallDistance(0);
+            event.getPlayer().setVelocity(new org.bukkit.util.Vector());
+            event.setTo(spawn);
+        });
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
-        plugin.worldPolicyService().configuredSpawn().ifPresent(event::setRespawnLocation);
+        if (isLobby(event.getPlayer().getWorld())) {
+            plugin.worldPolicyService().configuredSpawn().ifPresent(event::setRespawnLocation);
+        }
+    }
+
+    private boolean isLobby(org.bukkit.World world) {
+        return world != null && world.getName().equals(plugin.settings().worldName());
     }
 }
