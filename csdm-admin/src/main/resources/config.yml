@@ -25,14 +25,14 @@ protection:
 
 maintenance:
   enabled: false
-  kick-message: "<aqua><bold>ARCHIVO CSDM</bold></aqua>\n<gray>Estamos realizando tareas de mantenimiento.</gray>\n<gray>Vuelve a intentarlo más tarde.</gray>"
+  kick-message: "<aqua><bold>CSDM • MANTENIMIENTO</bold></aqua>\n<gray>Estamos realizando tareas de mantenimiento.</gray>\n<gray>Vuelve a intentarlo más tarde.</gray>"
 
 motd:
   enabled: true
-  online-line-1: "<gradient:#00E5FF:#B86BFF><bold>✦ ARCHIVO CSDM ✦</bold></gradient>"
+  online-line-1: "<gradient:#00E5FF:#B86BFF><bold>✦ CSDM ✦</bold></gradient>"
   online-line-2: "<gray>Verifica tu identidad <dark_gray>•</dark_gray> <white>Java 1.21–26.2</white></gray>"
-  maintenance-line-1: "<gold><bold>⚙ ARCHIVO CSDM • MANTENIMIENTO</bold></gold>"
-  maintenance-line-2: "<gray>El Archivo volverá pronto</gray>"
+  maintenance-line-1: "<gold><bold>⚙ CSDM • MANTENIMIENTO</bold></gold>"
+  maintenance-line-2: "<gray>Volveremos pronto.</gray>"
 
 spawn:
   configured: false

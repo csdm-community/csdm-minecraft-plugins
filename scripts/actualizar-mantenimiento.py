@@ -1,44 +1,55 @@
 #!/usr/bin/env python3
-"""Actualiza los dos textos de mantenimiento existentes y conserva un respaldo."""
+"""Actualiza los avisos y el nombre del servidor y conserva un respaldo."""
 import json
 import os
 from pathlib import Path
-import re
+import copy
+
+import yaml
 import shutil
 import tempfile
 
 
 MESSAGES = {
     ("maintenance", "kick-message"): (
-        "<aqua><bold>ARCHIVO CSDM</bold></aqua>\n"
+        "<aqua><bold>CSDM • MANTENIMIENTO</bold></aqua>\n"
         "<gray>Estamos realizando tareas de mantenimiento.</gray>\n"
         "<gray>Vuelve a intentarlo más tarde.</gray>"
     ),
-    ("motd", "maintenance-line-2"): "<gray>El Archivo volverá pronto</gray>",
+    ("motd", "online-line-1"): "<gradient:#00E5FF:#B86BFF><bold>✦ CSDM ✦</bold></gradient>",
+    ("motd", "maintenance-line-1"): "<gold><bold>⚙ CSDM • MANTENIMIENTO</bold></gold>",
+    ("motd", "maintenance-line-2"): "<gray>Volveremos pronto.</gray>",
 }
 
 
 def updated_config(text):
-    section = None
-    found = []
-    output = []
-    for line in text.splitlines(keepends=True):
-        header = re.match(r"^([\w-]+):", line)
-        if header:
-            section = header.group(1)
-        field = re.match(r"^  ([\w-]+):\s*(.*?)\s*$", line)
-        key = (section, field.group(1)) if field else None
-        if key in MESSAGES:
-            # El formato esperado es un escalar citado en una sola línea.
-            value = field.group(2)
-            if not re.fullmatch(r'"(?:[^"\\]|\\.)*"|\'(?:[^\']|\'\')*\'', value):
-                raise ValueError(f"Formato inesperado en {section}.{key[1]}; no se modificó el archivo.")
-            found.append(key)
-            line = f"  {key[1]}: {json.dumps(MESSAGES[key], ensure_ascii=False)}\n"
-        output.append(line)
-    if sorted(found) != sorted(MESSAGES):
-        raise ValueError("Faltan claves o están duplicadas; no se modificó el archivo.")
-    return "".join(output)
+    # Cambiar los segmentos de los valores conserva los demás textos y comentarios.
+    root = yaml.compose(text, Loader=yaml.SafeLoader)
+    expected = copy.deepcopy(yaml.safe_load(text))
+    edits = []
+    for (section, field), message in MESSAGES.items():
+        node = root
+        for name in (section, field):
+            if not isinstance(node, yaml.MappingNode):
+                raise ValueError(f"Se esperaba una sección YAML: {section}.{field}")
+            matches = [value for key, value in node.value if key.value == name]
+            if len(matches) != 1:
+                raise ValueError(f"Clave ausente o duplicada: {section}.{field}")
+            node = matches[0]
+        if not isinstance(node, yaml.ScalarNode) or node.tag != "tag:yaml.org,2002:str":
+            raise ValueError(f"Se esperaba un texto en {section}.{field}")
+        start, end = node.start_mark.index, node.end_mark.index
+        replacement = json.dumps(message, ensure_ascii=False)
+        if text[start:end].endswith("\n"):
+            replacement += "\n"
+        edits.append((start, end, replacement))
+        expected[section][field] = message
+    updated = text
+    for start, end, replacement in sorted(edits, reverse=True):
+        updated = updated[:start] + replacement + updated[end:]
+    if yaml.safe_load(updated) != expected:
+        raise ValueError("La validación detectó cambios adicionales; no se modificó el archivo.")
+    return updated
 
 
 def main():
