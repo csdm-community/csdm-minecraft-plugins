@@ -1,0 +1,15 @@
+name: CSDMParkour
+version: '${version}'
+main: tv.csdm.minecraft.parkour.ParkourPlugin
+api-version: '26.3'
+author: CSDM
+softdepend: [CSDMAdmin, CSDMVerify]
+commands:
+  parkour:
+    description: Recorridos de parkour del museo
+    usage: /parkour [lista|salir|reiniciar|checkpoint|crear|inicio|cp|meta|salida|caida|activar|recargar]
+permissions:
+  csdm.parkour.use:
+    default: true
+  csdm.parkour.admin:
+    default: op

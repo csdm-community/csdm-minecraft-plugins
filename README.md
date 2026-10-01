@@ -7,6 +7,8 @@ Plugins Paper para la infraestructura Minecraft de CSDM.
 - `csdm-verify`: vinculación segura de una cuenta CSDM con el UUID autenticado por Minecraft.
 - `csdm-community`: rangos de staff delegados a LuckPerms y medallas de CSDM.
 - `csdm-admin`: políticas del lobby, noche permanente, spawn y modo mantenimiento.
+- `csdm-parkour`: recorridos por sesiones, checkpoints y recuperación de inventarios.
+- `csdm-visuals`: escala por observador mediante PacketEvents; desactivada hasta la prueba visual.
 
 El módulo de comunidad también personaliza los mensajes de entrada/salida. El
 módulo de administración publica un MOTD de dos líneas y mantiene la noche y el
@@ -19,8 +21,9 @@ En el chat, el nombre se muestra sin corchetes angulares: `RANGO • Nick: mensa
 
 ## Requisitos
 
-- Paper 26.2 build 121 o posterior compatible.
-- Java 25.
+- Paper 26.3 build 135 beta (API fijada en esta rama).
+- JDK 25 para compilar; Java 25 para ejecutar.
+- PacketEvents 2.14.0 para `CSDMVisuals`.
 - LuckPerms para `CSDMCommunity`.
 - ViaVersion y ViaBackwards para el rango de clientes admitido por `CSDMVerify`.
 
@@ -34,9 +37,13 @@ Los JAR quedan en el directorio `build/libs` de cada módulo.
 
 La guía de despliegue está en [`docs/VPS_INSTALL.md`](docs/VPS_INSTALL.md).
 
+Parkour y escala: [`docs/LOBBY_ACTIVITIES.md`](docs/LOBBY_ACTIVITIES.md), con instalación,
+comandos, recuperación y pruebas de aceptación pendientes.
+
 ## Plugins públicos fijados
 
-El script `scripts/install-public-plugins.sh` instala y verifica por SHA-512:
+**El instalador siguiente conserva versiones históricas de 26.2; no ejecutarlo
+sobre la instalación de 26.3.** El script `scripts/install-public-plugins.sh` fija y verifica por SHA-512:
 
 - LuckPerms 5.5.71 para permisos y rangos.
 - FancyNpcs 2.11.0 para NPCs con skins y escala.

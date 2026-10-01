@@ -1,0 +1,4 @@
+# Los recorridos se crean desactivados. Inicio, checkpoints y meta son el
+# bloque sólido situado inmediatamente debajo de tus pies al ejecutar el comando.
+worlds: [lobby]
+courses: {}

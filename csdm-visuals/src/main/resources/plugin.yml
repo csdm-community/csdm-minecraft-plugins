@@ -1,0 +1,17 @@
+name: CSDMVisuals
+version: '${version}'
+main: tv.csdm.minecraft.visuals.VisualsPlugin
+api-version: '26.3'
+author: CSDM
+depend: [packetevents]
+softdepend: [LuckPerms, CSDMCommunity]
+commands:
+  csdmvisuals:
+    permission: csdm.visual.admin
+    description: Recargar la escala visual del lobby
+permissions:
+  csdm.visual.fullsize:
+    description: Otros jugadores te ven en tamaño normal
+    default: false
+  csdm.visual.admin:
+    default: op
