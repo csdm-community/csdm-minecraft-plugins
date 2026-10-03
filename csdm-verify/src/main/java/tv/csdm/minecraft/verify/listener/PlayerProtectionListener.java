@@ -15,6 +15,8 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.util.Vector;
 import tv.csdm.minecraft.verify.world.WorldRoutingService;
 
 public final class PlayerProtectionListener implements Listener {
@@ -44,8 +46,13 @@ public final class PlayerProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player player && protect(player)) {
+        if (event.getEntity() instanceof Player player && routing.isVerificationWorld(player.getWorld())) {
+            // Building permissions must not disable safety in the verification area.
             event.setCancelled(true);
+            if (event.getCause() == EntityDamageEvent.DamageCause.VOID) {
+                resetFall(player);
+                player.teleport(routing.verificationSpawn());
+            }
         }
     }
 
@@ -81,11 +88,30 @@ public final class PlayerProtectionListener implements Listener {
         event.setCancelled(protect(event.getPlayer()));
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        if (routing.isVerificationWorld(event.getPlayer().getWorld()) && event.getTo().getY() < 50) {
-            event.setTo(routing.verificationSpawn());
+        if (event.getTo() == null || !routing.isVerificationWorld(event.getTo().getWorld())) {
+            return;
         }
+        var spawn = routing.verificationSpawn();
+        if (event.getTo().getY() < spawn.getY() - 10) {
+            resetFall(event.getPlayer());
+            event.setTo(spawn);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onRespawn(PlayerRespawnEvent event) {
+        if (routing.isVerificationWorld(event.getPlayer().getWorld())) {
+            event.setRespawnLocation(routing.verificationSpawn());
+            resetFall(event.getPlayer());
+        }
+    }
+
+    private static void resetFall(Player player) {
+        player.setFallDistance(0);
+        player.setVelocity(new Vector());
+        player.setFireTicks(0);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

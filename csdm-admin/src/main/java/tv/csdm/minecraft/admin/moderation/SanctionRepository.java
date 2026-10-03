@@ -3,6 +3,8 @@ package tv.csdm.minecraft.admin.moderation;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.DateTimeException;
+import java.util.List;
 import java.util.Comparator;
 import java.util.UUID;
 import org.bukkit.configuration.ConfigurationSection;
@@ -35,6 +37,17 @@ public final class SanctionRepository {
         data.set(path + ".active", sanction.active());
         data.set(path + ".public-announcement", sanction.publicAnnouncement());
         flush();
+    }
+
+    /** Immutable snapshot shared by history views; includes disconnected players and pardons. */
+    public synchronized List<Sanction> history() {
+        ConfigurationSection root = data.getConfigurationSection("sanctions");
+        if (root == null) return List.of();
+        return root.getKeys(false).stream()
+                .map(id -> read(root.getConfigurationSection(id), id))
+                .filter(java.util.Objects::nonNull)
+                .sorted(Comparator.comparing(Sanction::createdAt).reversed().thenComparing(Sanction::id))
+                .toList();
     }
 
     public synchronized Sanction activeRestriction(UUID playerId, Instant now) {
@@ -106,7 +119,7 @@ public final class SanctionRepository {
                     expires == null || expires.isBlank() ? null : Instant.parse(expires),
                     section.getBoolean("active"),
                     section.getBoolean("public-announcement"));
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | DateTimeException exception) {
             plugin.getLogger().warning("Se ignoró una sanción local inválida: " + id);
             return null;
         }

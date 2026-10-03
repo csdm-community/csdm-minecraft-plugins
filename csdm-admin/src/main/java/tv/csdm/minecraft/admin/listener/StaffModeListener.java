@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -19,6 +21,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import tv.csdm.minecraft.admin.staff.StaffModeService;
+import tv.csdm.minecraft.admin.staff.StaffInspection;
+import tv.csdm.minecraft.admin.staff.StaffTeleportMenu;
+import tv.csdm.minecraft.admin.staff.StaffSanctionMenu;
 
 public final class StaffModeListener implements Listener {
     private final StaffModeService staffMode;
@@ -55,6 +60,9 @@ public final class StaffModeListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onToolUse(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
         if (!staffMode.isActive(player)) {
             return;
         }
@@ -64,14 +72,11 @@ public final class StaffModeListener implements Listener {
         }
         event.setCancelled(true);
         switch (action) {
-            case StaffModeService.VANISH -> {
-                boolean vanished = staffMode.toggleVanish(player);
-                player.sendMessage(Component.text(
-                        vanished ? "Vanish activado." : "Vanish desactivado.",
-                        vanished ? NamedTextColor.AQUA : NamedTextColor.YELLOW));
-            }
+            case StaffModeService.VANISH -> staffMode.toggleVanish(player);
             case StaffModeService.EXIT -> staffMode.disable(player);
-            case StaffModeService.TELEPORT -> showTargets(player, "tp", false);
+            case StaffModeService.RANDOM_TELEPORT -> staffMode.teleportRandom(player);
+            case StaffModeService.TELEPORT -> staffMode.openTeleportMenu(player, 0);
+            case StaffModeService.HISTORY -> staffMode.openSanctionHistory(player, null);
             case StaffModeService.FREEZE -> showTargets(player, "congelar", false);
             case StaffModeService.INSPECT -> showTargets(player, "inspeccionar", false);
             case StaffModeService.SANCTION -> showTargets(player, "", true);
@@ -82,6 +87,9 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerToolUse(PlayerInteractEntityEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
         Player staff = event.getPlayer();
         Entity clicked = event.getRightClicked();
         if (!staffMode.isActive(staff) || !(clicked instanceof Player target)) {
@@ -93,12 +101,11 @@ public final class StaffModeListener implements Listener {
         }
         event.setCancelled(true);
         switch (action) {
-            case StaffModeService.TELEPORT -> staff.teleportAsync(target.getLocation());
+            case StaffModeService.TELEPORT -> staffMode.openTeleportMenu(staff, 0);
+            case StaffModeService.HISTORY -> staffMode.openSanctionHistory(staff, target.getName());
             case StaffModeService.FREEZE -> {
                 boolean frozen = staffMode.toggleFreeze(target);
-                staff.sendMessage(Component.text(
-                        target.getName() + (frozen ? " quedó congelado." : " fue liberado."),
-                        NamedTextColor.AQUA));
+                staffMode.notifyFreezeResult(staff, target, frozen);
             }
             case StaffModeService.INSPECT -> staffMode.openInspection(staff, target);
             case StaffModeService.SANCTION -> staff.sendMessage(Component.text(
@@ -111,6 +118,26 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof StaffSanctionMenu menu) {
+            event.setCancelled(true);
+            if (event.getWhoClicked() instanceof Player player && event.getRawSlot() >= 0 && event.getRawSlot() < 54
+                    && (event.getClick() == ClickType.LEFT || event.getClick() == ClickType.RIGHT)) {
+                staffMode.clickSanctionHistory(player, menu, event.getRawSlot());
+            }
+            return;
+        }
+        if (event.getView().getTopInventory().getHolder() instanceof StaffTeleportMenu menu) {
+            event.setCancelled(true);
+            if (event.getWhoClicked() instanceof Player player && event.getRawSlot() >= 0 && event.getRawSlot() < 54
+                    && (event.getClick() == ClickType.LEFT || event.getClick() == ClickType.RIGHT)) {
+                staffMode.clickTeleportMenu(player, menu, event.getRawSlot());
+            }
+            return;
+        }
+        if (event.getView().getTopInventory().getHolder() instanceof StaffInspection) {
+            event.setCancelled(true);
+            return;
+        }
         if (event.getWhoClicked() instanceof Player player && staffMode.isActive(player)) {
             event.setCancelled(true);
         }
@@ -118,6 +145,18 @@ public final class StaffModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof StaffSanctionMenu) {
+            event.setCancelled(true);
+            return;
+        }
+        if (event.getView().getTopInventory().getHolder() instanceof StaffTeleportMenu) {
+            event.setCancelled(true);
+            return;
+        }
+        if (event.getView().getTopInventory().getHolder() instanceof StaffInspection) {
+            event.setCancelled(true);
+            return;
+        }
         if (event.getWhoClicked() instanceof Player player && staffMode.isActive(player)) {
             event.setCancelled(true);
         }
