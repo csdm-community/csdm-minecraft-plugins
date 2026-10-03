@@ -56,7 +56,8 @@ public final class AdminPlayerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        if (event.getTo() == null || !isLobby(event.getTo().getWorld())
+        if (event.getPlayer().hasMetadata("csdm_parkour_active")
+                || event.getTo() == null || !isLobby(event.getTo().getWorld())
                 || event.getTo().getY() >= plugin.settings().rescueBelowY()) {
             return;
         }

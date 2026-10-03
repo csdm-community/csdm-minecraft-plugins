@@ -10,4 +10,7 @@ public interface BackendClient {
     CompletableFuture<VerificationResponse> verify(VerificationRequest request);
 
     CompletableFuture<IdentityStatusResponse> identityStatus(UUID minecraftUuid);
+    default CompletableFuture<IdentityStatusResponse> identityStatus(tv.csdm.minecraft.verify.model.PlayerIdentity identity) {
+        return identityStatus(identity.uuid());
+    }
 }

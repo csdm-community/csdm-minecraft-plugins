@@ -1,6 +1,7 @@
 package tv.csdm.minecraft.verify.backend;
 
 import java.util.UUID;
+import tv.csdm.minecraft.verify.model.PlayerIdentity;
 import tv.csdm.minecraft.verify.model.VerificationRequest;
 
 final class JsonCodec {
@@ -9,6 +10,8 @@ final class JsonCodec {
     static String encode(VerificationRequest request) {
         return "{" +
                 field("code", request.code()) + "," +
+                field("edition", request.edition()) + "," +
+                nullableString("bedrockXuid", request.bedrockXuid()) + "," +
                 field("minecraftUuid", request.minecraftUuid().toString()) + "," +
                 field("minecraftUsername", request.minecraftUsername()) + "," +
                 nullableNumber("clientProtocol", request.clientProtocol()) + "," +
@@ -20,6 +23,13 @@ final class JsonCodec {
     static String encodeStatus(UUID minecraftUuid) {
         return "{" + field("action", "status") + "," +
                 field("minecraftUuid", minecraftUuid.toString()) + "}";
+    }
+
+    static String encodeStatus(PlayerIdentity identity) {
+        return "{" + field("action", "status") + "," +
+                field("minecraftUuid", identity.uuid().toString()) + "," +
+                field("edition", identity.edition()) + "," +
+                nullableString("bedrockXuid", identity.xuid()) + "}";
     }
 
     static String stringField(String body, String fieldName) {

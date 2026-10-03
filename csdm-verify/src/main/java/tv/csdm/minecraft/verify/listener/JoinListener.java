@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import tv.csdm.minecraft.verify.CSDMVerifyPlugin;
+import tv.csdm.minecraft.verify.model.PlayerIdentity;
+import tv.csdm.minecraft.verify.service.PlayerIdentityResolver;
 import tv.csdm.minecraft.verify.backend.BackendClient;
 import tv.csdm.minecraft.verify.config.Messages;
 import tv.csdm.minecraft.verify.config.VerifySettings;
@@ -51,7 +53,15 @@ public final class JoinListener implements Listener {
             return;
         }
 
-        backend.identityStatus(player.getUniqueId()).thenAccept(status ->
+        PlayerIdentity identity;
+        try {
+            identity = new PlayerIdentityResolver(plugin).resolve(player);
+        } catch (IllegalArgumentException | LinkageError exception) {
+            player.kick(messages.plain("crossplay-unavailable"));
+            plugin.getLogger().warning("Identidad rechazada: " + exception.getMessage());
+            return;
+        }
+        backend.identityStatus(identity).thenAccept(status ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     if (!player.isOnline()) {
                         return;

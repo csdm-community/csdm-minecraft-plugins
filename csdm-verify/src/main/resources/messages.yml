@@ -8,7 +8,7 @@ cooldown: "<yellow>Espera unos segundos antes de intentarlo otra vez.</yellow>"
 rate-limited: "<red>Demasiados intentos. Espera un minuto.</red>"
 in-flight: "<yellow>Ya estamos comprobando un codigo para tu cuenta.</yellow>"
 checking: "<aqua>Comprobando tu identidad con el Archivo...</aqua>"
-unsupported-version: "<red>Tu version no es compatible. Usa Minecraft Java 1.21–26.2.</red>"
+unsupported-version: "<red>Tu version no es compatible. Usa Minecraft Java 1.21–26.3.</red>"
 verified: "<green><bold>✓ Identidad verificada correctamente.</bold></green>"
 verified-detail: "<gray>Tu cuenta <white><username></white> ha quedado vinculada a CSDM.</gray>"
 invalid-backend-code: "<red>Ese codigo no existe o es incorrecto.</red>"
@@ -30,3 +30,8 @@ museum-welcome: "<green>Identidad reconocida.</green> <gray>Bienvenido al museo 
 success-title: "<green><bold>IDENTIDAD ARCHIVADA</bold></green>"
 success-subtitle: "<gray>Minecraft verificado ✓</gray>"
 kick-success: "<green>Identidad archivada.</green>\n<gray>Vuelve a entrar para acceder al museo de CSDM.</gray>"
+
+crossplay-unavailable: "<yellow>La vinculación Bedrock todavía no está disponible o su configuración requiere revisión. Contacta al staff.</yellow>"
+
+account-linked: "<red>Tu cuenta CSDM ya tiene otra identidad Bedrock vinculada. Contacta al equipo de CSDM.</red>"
+discord-required: "<red>Verifica tu cuenta de Discord en CSDM antes de vincular Minecraft.</red>"

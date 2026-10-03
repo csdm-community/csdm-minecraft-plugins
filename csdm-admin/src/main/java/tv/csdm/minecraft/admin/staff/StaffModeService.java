@@ -81,9 +81,14 @@ public final class StaffModeService {
         if (isActive(player)) {
             return false;
         }
+        if (player.hasMetadata("csdm_parkour_active")) {
+            player.sendMessage(Component.text("Sal del parkour antes de activar Staff Mode.", NamedTextColor.YELLOW));
+            return false;
+        }
         StaffSnapshot snapshot = capture(player);
         snapshots.save(player.getUniqueId(), snapshot);
         active.add(player.getUniqueId());
+        player.setMetadata("csdm_staff_active", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
         visible.remove(player.getUniqueId());
 
         player.getInventory().clear();
@@ -105,6 +110,7 @@ public final class StaffModeService {
         if (!active.remove(player.getUniqueId())) {
             return false;
         }
+        player.removeMetadata("csdm_staff_active", plugin);
         visible.remove(player.getUniqueId());
         frozen.remove(player.getUniqueId());
         if (player.getOpenInventory().getTopInventory().getHolder() instanceof StaffInspection

@@ -33,7 +33,16 @@ public final class HttpBackendClient implements BackendClient {
 
     @Override
     public CompletableFuture<IdentityStatusResponse> identityStatus(UUID minecraftUuid) {
-        return send(JsonCodec.encodeStatus(minecraftUuid))
+        return status(JsonCodec.encodeStatus(minecraftUuid));
+    }
+
+    @Override
+    public CompletableFuture<IdentityStatusResponse> identityStatus(tv.csdm.minecraft.verify.model.PlayerIdentity identity) {
+        return status(JsonCodec.encodeStatus(identity));
+    }
+
+    private CompletableFuture<IdentityStatusResponse> status(String body) {
+        return send(body)
                 .thenApply(response -> response.statusCode() == 200
                         ? new IdentityStatusResponse(JsonCodec.booleanField(response.body(), "linked"), true)
                         : new IdentityStatusResponse(false, false))
