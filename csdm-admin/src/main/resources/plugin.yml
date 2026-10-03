@@ -4,7 +4,7 @@ main: tv.csdm.minecraft.admin.CSDMAdminPlugin
 description: Administracion operativa y proteccion del lobby CSDM
 author: CSDM
 website: https://csdm.tv
-api-version: '26.2'
+api-version: '26.3'
 softdepend: [LuckPerms]
 commands:
   csdmadmin:

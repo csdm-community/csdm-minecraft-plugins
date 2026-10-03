@@ -4,7 +4,7 @@ main: tv.csdm.minecraft.verify.CSDMVerifyPlugin
 description: Verificacion segura de UUID de Minecraft para CSDM.tv
 author: CSDM
 website: https://csdm.tv
-api-version: '26.2'
+api-version: '26.3'
 softdepend: [ViaVersion]
 commands:
   verificar:
@@ -18,4 +18,3 @@ permissions:
   csdm.verify.bypass-protection:
     description: Omite las protecciones del lobby de verificacion
     default: op
-

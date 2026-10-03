@@ -4,7 +4,7 @@ main: tv.csdm.minecraft.community.CSDMCommunityPlugin
 description: Rangos de staff y medallas para la comunidad CSDM
 author: CSDM
 website: https://csdm.tv
-api-version: '26.2'
+api-version: '26.3'
 depend: [LuckPerms]
 commands:
   medalla:
