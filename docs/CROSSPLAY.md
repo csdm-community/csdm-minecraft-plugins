@@ -124,3 +124,37 @@ se necesita cerrar el puerto. Conservar datos y respaldos; no borrar identidades
 - <https://geysermc.org/wiki/floodgate/linking/>
 - <https://geysermc.org/wiki/floodgate/api/>
 - <https://github.com/ViaVersion/ViaVersion/blob/master/api/src/main/java/com/viaversion/viaversion/api/protocol/version/ProtocolVersion.java>
+
+## Avisos de sanciones y canales Discord
+
+El bot incluye los siguientes comandos administrativos (requieren Administrar
+servidor), una vez desplegada su actualización:
+
+```text
+/csdm-admin sanciones-canal tipo:Público canal:#sanciones-publicas
+/csdm-admin sanciones-canal tipo:Privado (staff) canal:#sanciones-staff
+/csdm-admin sanciones-estado
+/csdm-admin sanciones-prueba tipo:Público
+/csdm-admin sanciones-prueba tipo:Privado (staff)
+```
+
+`tipo` y `canal` se seleccionan en las opciones de Discord. Las preferencias
+persisten y no cambian el canal general de anuncios ni otros logs. Se comprueban
+los permisos del bot y que el canal privado no sea legible por roles comunitarios.
+
+Todas las acciones generan registro privado. Bloqueos permanentes y suspensiones
+de 24 h o más generan además anuncio público. El aviso público omite moderador y
+UUID; no incluye notas privadas adicionales. Su motivo debe ser apto para difusión.
+Advertencias, expulsiones, suspensiones cortas y retiradas se registran en privado.
+
+CSDMAdmin conserva los avisos sin confirmar en `moderation-outbox/`, reintenta
+cada 60 s hasta 20 pendientes por ciclo y recupera la cola al reiniciar. Respaldar
+esa carpeta. Un HTTP 202 no vacía la cola: hace falta confirmación de entrega.
+Si un aviso supera 30 días, el backend requiere revisión manual; no borrar su
+archivo para fingir entrega. Cambios de URL/secreto requieren reiniciar el plugin.
+
+El bot guarda recibos independientes del mensaje privado y público en Supabase.
+Requiere la migración `minecraft_sanction_delivery_receipts` y una sola réplica
+activa por servidor Discord. Discord deduplica un nonce solo durante unos minutos:
+si se cae justo entre enviar y guardar el recibo, un reintento muy tardío aún puede
+duplicar ese mensaje. El ID del caso permite reconocerlo.
