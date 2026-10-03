@@ -4,7 +4,7 @@ main: tv.csdm.minecraft.visuals.VisualsPlugin
 api-version: '26.3'
 author: CSDM
 depend: [packetevents]
-softdepend: [LuckPerms, CSDMCommunity]
+softdepend: [LuckPerms, CSDMCommunity, floodgate]
 commands:
   csdmvisuals:
     permission: csdm.visual.admin

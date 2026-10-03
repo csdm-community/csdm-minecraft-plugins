@@ -8,17 +8,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 import tv.csdm.minecraft.verify.model.ClientVersion;
 
 public final class ViaVersionClientVersionResolver implements ClientVersionResolver {
-    private static final Map<Integer, String> KNOWN_PROTOCOLS = Map.of(
-            767, "1.21–1.21.1",
-            768, "1.21.2–1.21.3",
-            769, "1.21.4",
-            770, "1.21.5",
-            771, "1.21.6",
-            772, "1.21.7–1.21.8",
-            773, "1.21.9–1.21.10",
-            774, "1.21.11",
-            775, "26.1",
-            776, "26.2");
+    private static final Map<Integer, String> KNOWN_PROTOCOLS = Map.ofEntries(
+            Map.entry(767, "1.21–1.21.1"),
+            Map.entry(768, "1.21.2–1.21.3"),
+            Map.entry(769, "1.21.4"),
+            Map.entry(770, "1.21.5"),
+            Map.entry(771, "1.21.6"),
+            Map.entry(772, "1.21.7–1.21.8"),
+            Map.entry(773, "1.21.9–1.21.10"),
+            Map.entry(774, "1.21.11"),
+            Map.entry(775, "26.1"),
+            Map.entry(776, "26.2"),
+            Map.entry(777, "26.3"));
 
     private final JavaPlugin plugin;
     private volatile Method getApiMethod;

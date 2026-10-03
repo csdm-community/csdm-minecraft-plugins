@@ -13,3 +13,6 @@ dependencies {
 val mockitoAgent = configurations.create("mockitoAgent")
 dependencies { mockitoAgent("org.mockito:mockito-core:5.20.0") { isTransitive = false } }
 tasks.test { jvmArgs("-javaagent:${mockitoAgent.asPath}") }
+
+repositories { maven { url = uri("https://repo.opencollab.dev/main/") } }
+dependencies { compileOnly("org.geysermc.floodgate:api:2.2.5-20260917.145236-21") }

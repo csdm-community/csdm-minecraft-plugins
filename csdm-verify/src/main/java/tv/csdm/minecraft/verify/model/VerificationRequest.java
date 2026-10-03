@@ -11,5 +11,12 @@ public record VerificationRequest(
         InetAddress address,
         Integer clientProtocol,
         String clientVersion,
-        Instant serverTimestamp) {}
+        Instant serverTimestamp,
+        String edition,
+        String bedrockXuid) {
+    public VerificationRequest(String code, UUID uuid, String name, InetAddress address,
+            Integer protocol, String version, Instant timestamp) {
+        this(code, uuid, name, address, protocol, version, timestamp, "java", null);
+    }
+}
 

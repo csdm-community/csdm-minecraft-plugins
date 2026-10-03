@@ -11,6 +11,8 @@ public final class BackendResponseMapper {
         VerificationResult result = switch (statusCode) {
             case 200 -> VerificationResult.VERIFIED;
             case 400 -> VerificationResult.INVALID_CODE;
+            case 403 -> "DISCORD_VERIFICATION_REQUIRED".equals(JsonCodec.stringField(body, "code"))
+                    ? VerificationResult.DISCORD_VERIFICATION_REQUIRED : VerificationResult.SERVER_ERROR;
             case 410 -> VerificationResult.CODE_EXPIRED;
             case 429 -> VerificationResult.RATE_LIMITED;
             case 409 -> mapConflict(body);
@@ -29,6 +31,7 @@ public final class BackendResponseMapper {
         }
         return switch (code.toUpperCase(Locale.ROOT)) {
             case "CODE_USED" -> VerificationResult.CODE_USED;
+            case "ACCOUNT_ALREADY_LINKED" -> VerificationResult.ACCOUNT_ALREADY_LINKED;
             case "UUID_ALREADY_LINKED" -> VerificationResult.UUID_ALREADY_LINKED;
             default -> VerificationResult.SERVER_ERROR;
         };

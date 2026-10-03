@@ -56,7 +56,7 @@ public record VerifySettings(
         }
 
         int minProtocol = positive(config, "client-versions.min-protocol", 767);
-        int maxProtocol = positive(config, "client-versions.max-protocol", 776);
+        int maxProtocol = positive(config, "client-versions.max-protocol", 777);
         if (maxProtocol < minProtocol) {
             throw new IllegalArgumentException("max-protocol no puede ser menor que min-protocol");
         }

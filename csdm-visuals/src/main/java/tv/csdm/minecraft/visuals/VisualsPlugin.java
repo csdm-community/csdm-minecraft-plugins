@@ -79,7 +79,8 @@ public final class VisualsPlugin extends JavaPlugin implements Listener, Command
             for (Player viewer : viewers) {
                 if (!viewer.canSee(target) || !viewer.getWorld().equals(target.getWorld())) continue;
                 Pair pair = new Pair(viewer.getUniqueId(), target.getEntityId());
-                boolean inLobby = enabled && worlds.contains(target.getWorld().getName());
+                boolean inLobby = enabled && worlds.contains(target.getWorld().getName())
+                        && (getConfig().getBoolean("bedrock-viewers-enabled", false) || !isBedrock(viewer));
                 double scale = inLobby ? ScalePolicy.scale(viewer.equals(target), target.hasPermission(fullsizePermission), smallScale) : actual(target);
                 if (inLobby) next.put(pair, scale);
                 if (inLobby || sent.containsKey(pair)) desired.put(pair, scale);
@@ -93,6 +94,11 @@ public final class VisualsPlugin extends JavaPlugin implements Listener, Command
             }
         }
         sent = Map.copyOf(next);
+    }
+
+    private boolean isBedrock(Player player) {
+        return getServer().getPluginManager().isPluginEnabled("floodgate")
+                && org.geysermc.floodgate.api.FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId());
     }
 
     private static double actual(Player target) {

@@ -20,7 +20,7 @@ rate-limit:
 
 client-versions:
   min-protocol: 767
-  max-protocol: 776
+  max-protocol: 777
   allow-unknown: true
 
 experience:
@@ -31,3 +31,7 @@ worlds:
   verification: "verify_void"
   museum: "lobby"
   verification-spawn-y: 100
+
+# Activar tras desplegar el backend crossplay y configurar Floodgate sin player-link.
+crossplay:
+  bedrock-enabled: false

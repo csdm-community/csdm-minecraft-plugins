@@ -16,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tv.csdm.minecraft.verify.CSDMVerifyPlugin;
+import tv.csdm.minecraft.verify.model.PlayerIdentity;
+import tv.csdm.minecraft.verify.service.PlayerIdentityResolver;
 import tv.csdm.minecraft.verify.config.Messages;
 import tv.csdm.minecraft.verify.config.VerifySettings;
 import tv.csdm.minecraft.verify.model.ClientVersion;
@@ -71,8 +73,15 @@ public final class VerifyCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        ClientVersion clientVersion = versionResolver.resolve(player);
-        if (!isSupported(clientVersion)) {
+        PlayerIdentity identity;
+        try {
+            identity = new PlayerIdentityResolver(plugin).resolve(player);
+        } catch (IllegalArgumentException | LinkageError exception) {
+            player.sendMessage(messages.prefixed("crossplay-unavailable"));
+            return true;
+        }
+        ClientVersion clientVersion = identity.bedrock() ? ClientVersion.unknown() : versionResolver.resolve(player);
+        if (!identity.bedrock() && !isSupported(clientVersion)) {
             player.sendMessage(messages.prefixed("unsupported-version"));
             return true;
         }
@@ -82,12 +91,12 @@ public final class VerifyCommand implements CommandExecutor, TabCompleter {
                 : player.getAddress().getAddress();
         VerificationRequest request = new VerificationRequest(
                 settings.normalizeCode(args[0]),
-                player.getUniqueId(),
-                player.getName(),
+                identity.uuid(),
+                identity.username(),
                 address,
-                clientVersion.protocol(),
-                clientVersion.displayName(),
-                Instant.now());
+                identity.bedrock() ? null : clientVersion.protocol(),
+                identity.bedrock() ? identity.version() : clientVersion.displayName(),
+                Instant.now(), identity.edition(), identity.xuid());
 
         VerificationCoordinator.StartResult startResult = coordinator.start(request);
         if (startResult instanceof VerificationCoordinator.Rejected rejected) {
@@ -126,6 +135,8 @@ public final class VerifyCommand implements CommandExecutor, TabCompleter {
             case CODE_EXPIRED -> player.sendMessage(messages.prefixed("expired"));
             case CODE_USED -> player.sendMessage(messages.prefixed("used"));
             case UUID_ALREADY_LINKED -> player.sendMessage(messages.prefixed("uuid-linked"));
+            case ACCOUNT_ALREADY_LINKED -> player.sendMessage(messages.prefixed("account-linked"));
+            case DISCORD_VERIFICATION_REQUIRED -> player.sendMessage(messages.prefixed("discord-required"));
             case RATE_LIMITED -> player.sendMessage(messages.prefixed("backend-rate-limited"));
             case NETWORK_ERROR, SERVER_ERROR -> player.sendMessage(messages.prefixed("server-error"));
         }

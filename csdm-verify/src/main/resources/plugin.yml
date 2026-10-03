@@ -5,7 +5,7 @@ description: Verificacion segura de UUID de Minecraft para CSDM.tv
 author: CSDM
 website: https://csdm.tv
 api-version: '26.3'
-softdepend: [ViaVersion]
+softdepend: [ViaVersion, floodgate]
 commands:
   verificar:
     description: Vincula tu cuenta autenticada de Minecraft con CSDM

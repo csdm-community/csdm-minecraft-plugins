@@ -1,22 +1,23 @@
 # Parkour y escala visual del museo
 
 Primera implementación para Paper **26.3 build 135 beta**, JDK 25 y paquete CSDM
-0.3.10. Está basada en `chore/paper-26.3`, no en `main` (que aún tiene una versión
+0.3.11. Está basada en `chore/paper-26.3`, no en `main` (que aún tiene una versión
 anterior). No se ha instalado en el VPS ni validado con clientes reales.
 
 ## Qué instalar
 
 Compilar con `./gradlew clean build`. Instalar los JAR normales, nunca `-sources.jar`:
 
-- `csdm-parkour/build/libs/csdm-parkour-0.3.10.jar`
-- `csdm-visuals/build/libs/csdm-visuals-0.3.10.jar`
-- `csdm-admin/build/libs/csdm-admin-0.3.10.jar` (incluye coordinación con parkour)
+- `csdm-parkour/build/libs/csdm-parkour-0.3.11.jar`
+- `csdm-visuals/build/libs/csdm-visuals-0.3.11.jar`
+- `csdm-admin/build/libs/csdm-admin-0.3.11.jar` (incluye coordinación con parkour)
 - PacketEvents **2.14.0**, distribución Spigot oficial de
   <https://github.com/retrooper/packetevents/releases/tag/v2.14.0>.
 
 Con el servidor detenido, respaldar los mundos, playerdata, configuraciones y
 JAR actuales. Sustituir el JAR de CSDMAdmin sin dejar otra versión duplicada.
-No hace falta sustituir Community o Verify para estas funciones. Conservar
+Para parkour y escala solos no hace falta sustituir Community o Verify.
+Para habilitar Bedrock, instalar también Verify 0.3.11 y seguir [CROSSPLAY.md](CROSSPLAY.md). Conservar
 `plugins/CSDMParkour/recovery/` en todos los respaldos y actualizaciones.
 **No usar `/reload` ni gestores de descarga/carga en caliente** para instalar.
 
@@ -92,8 +93,10 @@ velocidad, ayuda externa o clientes modificados.
 En `plugins/CSDMVisuals/config.yml`, configurar los mundos y después `enabled: true`.
 Ejecutar `/csdmvisuals` para recargar (requiere `csdm.visual.admin`).
 
-- Cada observador se ve en 1.0.
-- Los demás jugadores se ven en 0.3, configurable.
+- Cada observador Java se ve en 1.0.
+- Los demás jugadores se ven en 0.3, configurable, desde Java.
+- Los observadores Bedrock mantienen la escala normal con
+  `bedrock-viewers-enabled: false` hasta validar la traducción de Geyser.
 - Quien tenga `csdm.visual.fullsize` se ve en 1.0 para todos.
 
 Asignar ese permiso al grupo real de Personalidad en LuckPerms. El plugin no

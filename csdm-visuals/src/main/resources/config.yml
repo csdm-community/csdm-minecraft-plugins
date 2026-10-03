@@ -5,3 +5,6 @@ other-player-scale: 0.3
 fullsize-permission: csdm.visual.fullsize
 # Detecta también cambios de permisos/rango sin reiniciar.
 refresh-ticks: 20
+
+# Bedrock observa la escala real hasta validar traducción de paquetes, cámara y selección.
+bedrock-viewers-enabled: false
