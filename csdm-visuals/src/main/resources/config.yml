@@ -8,3 +8,8 @@ refresh-ticks: 20
 
 # Bedrock observa la escala real hasta validar traducción de paquetes, cámara y selección.
 bedrock-viewers-enabled: false
+
+# Independiente de la escala: sustituye ✦ por * y • por | solo para Bedrock.
+# Conserva acentos, colores y estilos. /csdmvisuals recarga esta opción.
+bedrock-text:
+  enabled: true
