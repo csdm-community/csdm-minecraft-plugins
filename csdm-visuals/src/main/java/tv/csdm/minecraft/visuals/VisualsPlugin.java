@@ -23,6 +23,8 @@ public final class VisualsPlugin extends JavaPlugin implements Listener, Command
     private volatile Map<Pair, Double> scales = Map.of();
     private Map<Pair, Double> sent = Map.of();
     private PacketListenerAbstract listener;
+    private BedrockTextListener textListener;
+    private volatile boolean bedrockTextEnabled;
     private BukkitTask refresh;
     private boolean enabled;
     private boolean refreshQueued;
@@ -33,6 +35,11 @@ public final class VisualsPlugin extends JavaPlugin implements Listener, Command
     @Override public void onEnable() {
         saveDefaultConfig();
         readSettings();
+        java.util.function.Predicate<UUID> bedrock = getServer().getPluginManager().isPluginEnabled("floodgate")
+                ? org.geysermc.floodgate.api.FloodgateApi.getInstance()::isFloodgatePlayer : id -> false;
+        textListener = new BedrockTextListener(bedrock, () -> bedrockTextEnabled);
+        PacketEvents.getAPI().getEventManager().registerListener(textListener);
+        getServer().getPluginManager().registerEvents(textListener, this);
         listener = new PacketListenerAbstract(PacketListenerPriority.HIGHEST) {
             @Override public void onPacketSend(PacketSendEvent event) {
                 if (event.getPacketType() != PacketType.Play.Server.UPDATE_ATTRIBUTES || event.getUser() == null) return;
@@ -56,6 +63,7 @@ public final class VisualsPlugin extends JavaPlugin implements Listener, Command
     }
 
     private void readSettings() {
+        bedrockTextEnabled = getConfig().getBoolean("bedrock-text.enabled", true);
         enabled = getConfig().getBoolean("enabled", false);
         smallScale = getConfig().getDouble("other-player-scale", .3);
         if (!Double.isFinite(smallScale) || smallScale < .0625 || smallScale > 1) throw new IllegalArgumentException("other-player-scale debe estar entre 0.0625 y 1");
@@ -141,6 +149,7 @@ public final class VisualsPlugin extends JavaPlugin implements Listener, Command
         if (refresh != null) refresh.cancel();
         scales = Map.of();
         if (listener != null) PacketEvents.getAPI().getEventManager().unregisterListener(listener);
+        if (textListener != null) PacketEvents.getAPI().getEventManager().unregisterListener(textListener);
         for (Player target : getServer().getOnlinePlayers()) {
             Set<Player> viewers = new HashSet<>(target.getTrackedBy()); viewers.add(target);
             for (Player viewer : viewers) if (viewer.canSee(target) && sent.containsKey(new Pair(viewer.getUniqueId(), target.getEntityId())))
