@@ -34,10 +34,12 @@ final class BedrockTextListener extends PacketListenerAbstract implements Listen
     public void onChat(AsyncChatEvent event) {
         // CSDMCommunity loads first. Wrap its renderer instead of replacing its format.
         ChatRenderer previous = event.renderer();
-        event.renderer((source, displayName, message, viewer) -> BedrockText.forViewer(
-                previous.render(source, displayName, message, viewer),
-                enabled.getAsBoolean() && viewer instanceof Player player
-                        && isBedrock.test(player.getUniqueId())));
+        event.renderer((source, displayName, message, viewer) -> {
+            boolean bedrock = enabled.getAsBoolean() && viewer instanceof Player player
+                    && isBedrock.test(player.getUniqueId());
+            return BedrockText.forViewer(previous.render(source,
+                    bedrock ? BedrockRankStyle.name(displayName) : displayName, message, viewer), bedrock);
+        });
     }
 
     @Override public void onPacketSend(PacketSendEvent event) {
@@ -52,7 +54,7 @@ final class BedrockTextListener extends PacketListenerAbstract implements Listen
         if (type == PacketType.Play.Server.SYSTEM_CHAT_MESSAGE) {
             var packet = new WrapperPlayServerSystemChatMessage(event);
             Component original = packet.getMessage();
-            Component compatible = BedrockText.forViewer(original, true);
+            Component compatible = BedrockText.forViewer(BedrockRankStyle.systemMessage(original), true);
             if (!compatible.equals(original)) {
                 packet.setMessage(compatible);
                 event.markForReEncode(true);
@@ -74,15 +76,16 @@ final class BedrockTextListener extends PacketListenerAbstract implements Listen
     }
 
     static ScoreBoardTeamInfo compatibleTeam(ScoreBoardTeamInfo info) {
-        return new ScoreBoardTeamInfo(BedrockText.forViewer(info.getDisplayName(), true),
-                BedrockText.forViewer(info.getPrefix(), true), BedrockText.forViewer(info.getSuffix(), true),
+        return new ScoreBoardTeamInfo(BedrockText.forViewer(BedrockRankStyle.display(info.getDisplayName()), true),
+                BedrockText.forViewer(BedrockRankStyle.display(info.getPrefix()), true),
+                BedrockText.forViewer(BedrockRankStyle.display(info.getSuffix()), true),
                 info.getTagVisibility(), info.getCollisionRule(), info.getColor(), info.getOptionData());
     }
 
     static WrapperPlayServerPlayerInfoUpdate.PlayerInfo compatibleEntry(
             WrapperPlayServerPlayerInfoUpdate.PlayerInfo entry) {
         var copy = new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(entry);
-        copy.setDisplayName(BedrockText.forViewer(entry.getDisplayName(), true));
+        copy.setDisplayName(BedrockText.forViewer(BedrockRankStyle.name(entry.getDisplayName()), true));
         return copy;
     }
 }
