@@ -41,7 +41,7 @@ class BedrockTextTest {
         var copy = BedrockTextListener.compatibleTeam(original);
         assertNotSame(original, copy);
         assertEquals(Component.text("DIRECCIÓN | ", NamedTextColor.AQUA)
-                .decoration(TextDecoration.BOLD, false).decoration(TextDecoration.ITALIC, false),
+                .decoration(TextDecoration.ITALIC, false),
                 copy.getPrefix().compact());
         assertEquals(Component.text("DIRECCIÓN • ", NamedTextColor.AQUA), original.getPrefix());
         assertEquals(original.getTagVisibility(), copy.getTagVisibility());

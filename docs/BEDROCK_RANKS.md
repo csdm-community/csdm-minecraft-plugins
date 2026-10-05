@@ -1,8 +1,12 @@
 # Rangos legibles en Bedrock
 
-CSDMVisuals 0.3.14 adapta las etiquetas CSDM para los receptores detectados por
+CSDMVisuals 0.3.15 adapta las etiquetas CSDM para los receptores detectados por
 Floodgate cuando `bedrock-text.enabled` está activado. Usa colores uniformes y
-texto sin negrita ni cursiva en las etiquetas, evitando los saltos del degradado.
+conserva la negrita configurada en los rangos y elimina la cursiva de las
+etiquetas, evitando los saltos del degradado. El nombre de cuenta en chat y
+lista de jugadores mantiene la base sin negrita ni cursiva; los separadores no
+heredan la negrita de las etiquetas. Los mensajes de entrada conservan la
+negrita de su plantilla original.
 
 | Rango | Color Bedrock |
 | --- | --- |
