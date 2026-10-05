@@ -177,10 +177,8 @@ public final class StaffRankService {
             Player player,
             Optional<StaffRankDefinition> functional,
             Optional<StaffRankDefinition> prestige) {
-        if (!plugin.getConfig().getBoolean("nametags.enabled", true)) {
-            removeDisplay(player);
-            return;
-        }
+        // Keep a team for collision control even when rank labels are disabled.
+        boolean showNametags = plugin.getConfig().getBoolean("nametags.enabled", true);
 
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         String teamName = teamName(player);
@@ -191,18 +189,21 @@ public final class StaffRankService {
         String separator = plugin.getConfig().getString(
                 "nametags.separator", "<dark_gray> • </dark_gray>");
 
-        if (plugin.getConfig().getBoolean("nametags.show-functional", true) && functional.isPresent()) {
+        if (showNametags && plugin.getConfig().getBoolean("nametags.show-functional", true) && functional.isPresent()) {
             team.prefix(miniMessage.deserialize(functional.get().nametagLabel() + separator));
         } else {
             team.prefix(Component.empty());
         }
-        if (plugin.getConfig().getBoolean("nametags.show-prestige", true) && prestige.isPresent()) {
+        if (showNametags && plugin.getConfig().getBoolean("nametags.show-prestige", true) && prestige.isPresent()) {
             team.suffix(miniMessage.deserialize(separator + prestige.get().nametagLabel()));
         } else {
             team.suffix(Component.empty());
         }
 
         team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+        // Player collision is predicted client-side; setCollidable(false) alone
+        // (used by parkour/staff mode) cannot reliably prevent player pushing.
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         team.addEntry(player.getName());
     }
 
