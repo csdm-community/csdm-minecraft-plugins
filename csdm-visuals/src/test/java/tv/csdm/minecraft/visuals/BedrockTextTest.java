@@ -40,7 +40,9 @@ class BedrockTextTest {
                 NameTagVisibility.ALWAYS, CollisionRule.NEVER, NamedTextColor.BLUE, OptionData.ALL);
         var copy = BedrockTextListener.compatibleTeam(original);
         assertNotSame(original, copy);
-        assertEquals(Component.text("DIRECCIÓN | ", NamedTextColor.AQUA), copy.getPrefix().compact());
+        assertEquals(Component.text("DIRECCIÓN | ", NamedTextColor.AQUA)
+                .decoration(TextDecoration.BOLD, false).decoration(TextDecoration.ITALIC, false),
+                copy.getPrefix().compact());
         assertEquals(Component.text("DIRECCIÓN • ", NamedTextColor.AQUA), original.getPrefix());
         assertEquals(original.getTagVisibility(), copy.getTagVisibility());
         assertEquals(original.getCollisionRule(), copy.getCollisionRule());
@@ -62,7 +64,9 @@ class BedrockTextTest {
         assertEquals(42, copy.getLatency());
         assertEquals(17, copy.getListOrder());
         assertTrue(copy.isListed());
-        assertEquals(Component.text("USUARIO | .sepultacion1"), copy.getDisplayName().compact());
+        assertEquals(Component.text("USUARIO | .sepultacion1", NamedTextColor.WHITE)
+                .decoration(TextDecoration.BOLD, false).decoration(TextDecoration.ITALIC, false),
+                copy.getDisplayName().compact());
         assertEquals(Component.text("USUARIO • .sepultacion1"), original.getDisplayName());
         original.setDisplayName(null);
         assertNull(BedrockTextListener.compatibleEntry(original).getDisplayName());

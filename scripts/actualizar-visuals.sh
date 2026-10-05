@@ -9,7 +9,7 @@ target="$server/plugins/CSDMVisuals.jar"
 [[ -f "$target" ]] || { echo 'No se encontró CSDMVisuals.jar'; exit 1; }
 systemctl is-active --quiet csdm-verify
 install -d -m 0755 /opt/csdm-builds /opt/csdm-backups
-work=$(mktemp -d /opt/csdm-builds/visuals-0.3.12.XXXXXX)
+work=$(mktemp -d /opt/csdm-builds/visuals-0.3.14.XXXXXX)
 curl --fail --location --retry 3 \
   "https://codeload.github.com/csdm-community/csdm-minecraft-plugins/tar.gz/$revision" \
   -o "$work/source.tar.gz"
@@ -20,9 +20,9 @@ chmod 0755 "$work"
 runuser -u minecraft -- bash -c \
   'cd "$1"; bash ./gradlew :csdm-visuals:build --no-daemon --max-workers=1 -Dorg.gradle.jvmargs=-Xmx768m' \
   bash "$work/source"
-jar="$work/source/csdm-visuals/build/libs/csdm-visuals-0.3.12.jar"
+jar="$work/source/csdm-visuals/build/libs/csdm-visuals-0.3.14.jar"
 [[ -s "$jar" ]] || { echo 'No se generó el JAR esperado'; exit 1; }
-backup=$(mktemp -d /opt/csdm-backups/visuals-0.3.12.XXXXXX)
+backup=$(mktemp -d /opt/csdm-backups/visuals-0.3.14.XXXXXX)
 cp -a "$target" "$backup/CSDMVisuals.jar"
 if [[ -d "$server/plugins/CSDMVisuals" ]]; then
   cp -a "$server/plugins/CSDMVisuals" "$backup/configuracion"
@@ -45,7 +45,7 @@ systemctl start csdm-verify
 ready=false
 for ((attempt=0; attempt<90; attempt++)); do
   if [[ "$server/logs/latest.log" -nt "$work/start-marker" ]] \
-      && grep -q 'Enabling CSDMVisuals v0.3.12' "$server/logs/latest.log" \
+      && grep -q 'Enabling CSDMVisuals v0.3.14' "$server/logs/latest.log" \
       && grep -q 'Done (' "$server/logs/latest.log"; then
     ready=true
     break
@@ -53,10 +53,10 @@ for ((attempt=0; attempt<90; attempt++)); do
   sleep 2
 done
 [[ "$ready" == true ]]
-if grep -Eq 'Error occurred while enabling CSDMVisuals|Disabling CSDMVisuals v0.3.12' "$server/logs/latest.log"; then
+if grep -Eq 'Error occurred while enabling CSDMVisuals|Disabling CSDMVisuals v0.3.14' "$server/logs/latest.log"; then
   rollback
 fi
 systemctl is-active --quiet csdm-verify
 trap - ERR
-echo 'CSDMVisuals 0.3.12 instalado. Vuelve a entrar desde Bedrock y Java.'
+echo 'CSDMVisuals 0.3.14 instalado. Vuelve a entrar desde Bedrock y Java.'
 grep -E 'CSDMVisuals|ERROR|Done \(' "$server/logs/latest.log" | tail -n 20
