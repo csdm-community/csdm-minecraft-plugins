@@ -19,6 +19,7 @@ class BedrockRankStyleTest {
         Component bedrock = BedrockRankStyle.display(original);
         assertUniform(bedrock, NamedTextColor.AQUA);
         assertEquals("DIRECCIÓN", plain(bedrock));
+        assertEquals("DIRECCIÓN", boldText(bedrock, false));
         assertEquals(original.clickEvent(), bedrock.clickEvent());
         assertNotEquals(original, bedrock);
         assertEquals(bedrock, BedrockRankStyle.display(bedrock));
@@ -34,6 +35,8 @@ class BedrockRankStyleTest {
         assertUniform(bedrock.children().get(0), NamedTextColor.GOLD);
         assertUniform(bedrock.children().get(1), NamedTextColor.LIGHT_PURPLE);
         assertEquals(".nsntx", plain(bedrock.children().get(2)));
+        // Only rank labels are bold: separators and the account name stay normal.
+        assertEquals("PERSONALIDADLEYENDA", boldText(bedrock, false));
         assertEquals(NamedTextColor.WHITE, bedrock.color());
         assertEquals(TextDecoration.State.FALSE, bedrock.decoration(TextDecoration.ITALIC));
         assertEquals(functional, original.children().get(0));
@@ -42,6 +45,7 @@ class BedrockRankStyleTest {
     @Test void handlesLeadingPrestigeSeparatorAndLeavesCustomLabelsAlone() {
         Component suffix = MM.deserialize("<dark_gray> • </dark_gray><aqua><bold>ÉLITE</bold></aqua>");
         assertUniform(BedrockRankStyle.display(suffix), NamedTextColor.AQUA);
+        assertEquals("ÉLITE", boldText(BedrockRankStyle.display(suffix), false));
         Component custom = MM.deserialize("<gradient:#FF0000:#0000FF>INVITADO</gradient>");
         assertEquals(custom, BedrockRankStyle.display(custom));
         assertNull(BedrockRankStyle.name(null));
@@ -51,6 +55,7 @@ class BedrockRankStyleTest {
         Component entrance = MM.deserialize("<gradient:#FFD166:#FF62C7><bold>✦ PERSONALIDAD · .nsntx visita el Archivo.</bold></gradient>");
         assertUniform(BedrockRankStyle.systemMessage(entrance), NamedTextColor.GOLD);
         assertEquals(plain(entrance), plain(BedrockRankStyle.systemMessage(entrance)));
+        assertEquals(boldText(entrance, false), boldText(BedrockRankStyle.systemMessage(entrance), false));
         Component body = MM.deserialize("<red><bold>PERSONALIDAD es mi rango</bold></red>");
         assertSame(body, BedrockRankStyle.systemMessage(body));
     }
@@ -62,9 +67,17 @@ class BedrockRankStyleTest {
     private static void assertUniform(Component component, NamedTextColor color) {
         if (component instanceof TextComponent text && !text.content().isEmpty()) {
             assertEquals(color, component.color());
-            assertEquals(TextDecoration.State.FALSE, component.decoration(TextDecoration.BOLD));
             assertEquals(TextDecoration.State.FALSE, component.decoration(TextDecoration.ITALIC));
         }
         component.children().forEach(child -> assertUniform(child, color));
+    }
+
+    private static String boldText(Component component, boolean inherited) {
+        var state = component.decoration(TextDecoration.BOLD);
+        boolean bold = state == TextDecoration.State.NOT_SET ? inherited : state == TextDecoration.State.TRUE;
+        StringBuilder result = new StringBuilder();
+        if (bold && component instanceof TextComponent text) result.append(text.content());
+        component.children().forEach(child -> result.append(boldText(child, bold)));
+        return result.toString();
     }
 }

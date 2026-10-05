@@ -48,8 +48,8 @@ final class BedrockRankStyle {
     }
 
     private static Component uniform(Component component, NamedTextColor color) {
-        return component.color(color).decoration(TextDecoration.BOLD, false)
-                .decoration(TextDecoration.ITALIC, false)
+        // Preserve the rank's configured bold style, including inherited styles.
+        return component.color(color).decoration(TextDecoration.ITALIC, false)
                 .children(component.children().stream().map(child -> uniform(child, color)).toList());
     }
 
