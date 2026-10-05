@@ -14,6 +14,7 @@ functional-ranks:
     priority: 200
     inherits: ["csdm-usuario"]
     permissions:
+      - "csdm.visual.fullsize"
       - "csdm.command.fly"
       - "csdm.admin.spawn"
       - "csdm.maintenance.bypass"

@@ -1,6 +1,7 @@
 package tv.csdm.minecraft.community;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Objects;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -26,6 +27,7 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        migratePersonalidadPermission();
         if (!new File(getDataFolder(), "medals.yml").isFile()) {
             saveResource("medals.yml", false);
         }
@@ -71,12 +73,31 @@ public final class CSDMCommunityPlugin extends JavaPlugin {
 
     public void reloadCommunityConfiguration() {
         reloadConfig();
+        migratePersonalidadPermission();
         medalRegistry = MedalRegistry.load(this);
         staffRankRegistry = StaffRankRegistry.load(getConfig());
         medalService.replaceRegistry(medalRegistry);
         staffRankService.replaceRegistry(staffRankRegistry);
         staffRankService.ensureManagedGroups();
         getServer().getOnlinePlayers().forEach(staffRankService::syncDisplay);
+    }
+
+    private void migratePersonalidadPermission() {
+        String marker = "migrations.personalidad-fullsize";
+        String rank = "functional-ranks.personalidad";
+        if (getConfig().getBoolean(marker, false) || !getConfig().contains(rank, true)) {
+            return;
+        }
+        // Upgrade installed configs once, preserving custom permissions and group names.
+        String path = rank + ".permissions";
+        var permissions = new ArrayList<>(getConfig().getStringList(path));
+        if (!permissions.contains("csdm.visual.fullsize")) {
+            permissions.add("csdm.visual.fullsize");
+            getConfig().set(path, permissions);
+        }
+        getConfig().set(marker, true);
+        saveConfig();
+        getLogger().info("Rango Personalidad actualizado con permiso de tamaño normal.");
     }
 
     @Override

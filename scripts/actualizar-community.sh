@@ -30,9 +30,12 @@ fi
 echo "RESPALDO: $backup"
 rollback() {
   trap - ERR
-  echo 'Falló la actualización. Restaurando el JAR anterior...'
+  echo 'Falló la actualización. Restaurando el JAR y la configuración anteriores...'
   systemctl stop csdm-verify || true
   cp -a "$backup/CSDMCommunity.jar" "$target"
+  if [[ -f "$backup/configuracion/config.yml" ]]; then
+    cp -a "$backup/configuracion/config.yml" "$server/plugins/CSDMCommunity/config.yml"
+  fi
   systemctl start csdm-verify
   exit 1
 }

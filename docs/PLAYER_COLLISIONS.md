@@ -27,11 +27,20 @@ Ejecutar `bash scripts/actualizar-community.sh SHA_COMPLETO` como root en el VPS
 El instalador compila antes de detener Paper, respalda CSDMCommunity y actualiza
 solo su JAR. No requiere cambiar la configuración existente.
 
+La misma actualización añade `csdm.visual.fullsize` al rango Personalidad.
+Al arrancar o recargar, migra una sola vez la lista de permisos existente en
+`functional-ranks.personalidad`, conservando los demás permisos y el nombre
+del grupo. Guarda `migrations.personalidad-fullsize: true` para permitir
+personalizaciones posteriores. LuckPerms recibe el permiso al sincronizar los
+grupos; CSDMVisuals 0.3.12 ya lo consulta en su actualización periódica.
+El instalador restaura también `config.yml` si falla el arranque.
+
 Después del reinicio, probar con dos jugadores Java y con Java/Bedrock:
 
 - Caminar uno contra otro y contra un jugador quieto en el lobby.
 - Repetir durante el parkour, en un checkpoint y después de abandonar la ruta.
-- Comprobar las etiquetas de rango, incluida una cuenta Personalidad.
+- Comprobar las etiquetas de rango y que Personalidad tenga tamaño normal
+  visto por otra cuenta Java, mientras un Usuario normal sigue pequeño.
 - Volver a entrar y cambiar un rango para confirmar que la regla persiste.
 
 La comprobación visual con clientes reales queda pendiente de la instalación.
